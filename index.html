@@ -668,9 +668,10 @@ class Component extends DCLogic {
     return '#/' + s.screen;
   }
   state = (() => {
-    const cfg = this.cfg, demo = this.ls('bgdx2-demo') === true, seen = this.ls('bgdx2-onb') === true, st = this.props.startScreen ?? 'Auto';
+    try { localStorage.removeItem('bgdx2-demo'); localStorage.removeItem('bgdx2-demotasks'); } catch (e) {}
+    const cfg = this.cfg, seen = this.ls('bgdx2-onb') === true, st = this.props.startScreen ?? 'Auto';
     const mode = cfg && cfg.url ? 'sheet' : 'none';
-    const tasks = mode === 'sheet' ? ((this.ls('bgdx2-cache') || {}).tasks || []) : mode === 'demo' ? (this.ls('bgdx2-demotasks') || this.seed()) : [];
+    const tasks = mode === 'sheet' ? ((this.ls('bgdx2-cache') || {}).tasks || []) : [];
     let screen = st === 'Onboarding' ? 'onboard' : st === 'Login' ? 'login' : st === 'Today' && mode !== 'none' ? 'today' : mode === 'none' ? (seen ? 'login' : 'onboard') : 'today';
     const hr = this.parseHash(); let sel0 = null;
     if (st === 'Auto' && mode !== 'none' && hr) { screen = hr.screen; sel0 = hr.sel || null; if (screen === 'detail' && !tasks.some(t => t.id === sel0)) { screen = 'today'; sel0 = null; } }
@@ -679,26 +680,10 @@ class Component extends DCLogic {
       sheet: false, draft: '', dPri: 1, dType: 'Technology', dDue: 'Today', dOwner: null, ownerF: null,
       q: '', fPri: [], fType: null, fStatus: 'all', col: 'In Progress', obStep: 0,
       secs: 1500, running: false, newSub: '', toast: null,
-      syncSt: mode === 'sheet' ? 'syncing' : mode === 'demo' ? 'demo' : 'idle', pend: (this.ls('bgdx2-queue') || []).length, lastSync: (this.ls('bgdx2-cache') || {}).ts || 0, syncErr: '',
+      syncSt: mode === 'sheet' ? 'syncing' : 'idle', pend: (this.ls('bgdx2-queue') || []).length, lastSync: (this.ls('bgdx2-cache') || {}).ts || 0, syncErr: '',
       lUrl: '', lKey: '', lMe: '', lErr: '', lBusy: false, lStep: 1, lShowKey: false, lAdv: false, lPend: null, dOwners: null, adminView: 'team',
     };
   })();
-  seed() {
-    const d = n => this.addD(n), mk = (id, title, domain, owner, status, pri, due, x) => ({ id, title, domain, owner, status, pri, due, costReq: false, cost: '', start: '', end: '', notes: '', subs: [], pr: '', branch: '', upd: 0, ...(x || {}) });
-    return [
-      mk('A-001', 'Branding & Design Guidelines (Logos)', 'Business Analysis', 'Sahadat', 'Closed', 0, d(-3), { end: d(-2) }),
-      mk('A-004', 'Spaceship to CloudFlare Migration', 'Technology', 'Sabbir', 'Closed', 1, d(-7), { end: d(0) }),
-      mk('A-006', 'Packaging - Measurement & Box (Design Finalization)', 'Operations', 'Sahadat', 'In Progress', 1, d(0), { start: d(-5), subs: [{ t: 'Final measurements', d: true }, { t: 'Box mockup', d: false }] }),
-      mk('A-008', 'Social Media Creations (Meta - FB, Instagram, Tik Tok)', 'Marketing', 'Nafis', 'In Progress', 2, d(1)),
-      mk('A-032', 'Website Launch Readiness (Architecture & System Infrastructure)', 'Technology', 'Nafis', 'In Progress', 0, d(0), { start: d(-6), pr: '#218', branch: 'feat/launch-readiness', subs: [{ t: 'Staging load test', d: true }, { t: 'Payment gateway test', d: true }, { t: 'Inventory sync check', d: false }, { t: 'Go-live checklist', d: false }] }),
-      mk('A-012', 'Domestic Two Business Sim Cards (Office & Customer Support)', 'Management', 'Hamim', 'Backlog', 2, d(2), { costReq: true, cost: 2000 }),
-      mk('A-002', 'Product SWOT Analysis', 'Business Analysis', 'C-Suite', 'Backlog', 3, d(-1)),
-      mk('A-018', 'Google My Business Profile (Finalizations)', 'Operations', 'Sabbir', 'Backlog', 2, d(3)),
-      mk('A-016', 'WhatsApp Business Profile (Sim Card Required)', 'Operations', 'Nafis', 'Blocked', 0, d(3), { notes: 'Waiting on sim card' }),
-      mk('A-026', 'Packaging - Order Placement (100 Unit)', 'Operations', 'C-Suite', 'Blocked', 1, d(0), { costReq: true }),
-      mk('A-014', 'Business Communication & Alerts Email (Postmark SMTP)', 'Operations', 'Sabbir', 'Parked', 4, ''),
-    ];
-  }
   iso(d) { const z = n => String(n).padStart(2, '0'); return d.getFullYear() + '-' + z(d.getMonth() + 1) + '-' + z(d.getDate()); }
   today() { return this.iso(new Date()); }
   addD(n) { const d = new Date(); d.setDate(d.getDate() + n); return this.iso(d); }
@@ -768,8 +753,7 @@ class Component extends DCLogic {
     if (this._pt !== s.tasks) {
       const first = this._pt === undefined; this._pt = s.tasks;
       if (!first) {
-        if (s.mode === 'sheet') this.sv('bgdx2-cache', { tasks: s.tasks, ts: s.lastSync });
-        else if (s.mode === 'demo') this.sv('bgdx2-demotasks', s.tasks);
+        if (s.mode === 'sheet') this.sv('bgdx2-cache', { tasks: s.tasks, ts: s.lastSync });
       }
     }
     if (this._pd !== s.dark) { const first = this._pd === undefined; this._pd = s.dark; if (!first) this.sv('bgdx2-dark', s.dark); }
@@ -826,7 +810,7 @@ class Component extends DCLogic {
     this.setState({ mode: 'sheet', tasks: p.tasks, dOwners: p.owners || [], screen: 'today', lBusy: false, lKey: '', lPend: null, lStep: 1, lErr: '', syncSt: 'synced', lastSync: Date.now(), pend: 0, ownerF: null });
   }
   signOut(msg) {
-    this.cfg = null; this.queue = []; this.sv('bgdx2-cfg', null); this.sv('bgdx2-queue', []); this.sv('bgdx2-cache', null); this.sv('bgdx2-demo', false);
+    this.cfg = null; this.queue = []; this.sv('bgdx2-cfg', null); this.sv('bgdx2-queue', []); this.sv('bgdx2-cache', null);
     this.setState({ mode: 'none', tasks: [], screen: 'login', lErr: msg || '', lKey: '', lStep: 1, lPend: null, syncSt: 'idle', pend: 0, ownerF: null });
   }
   afterOb() { this.sv('bgdx2-onb', true); this.setState(s => ({ screen: s.mode === 'none' ? 'login' : 'today' })); }
@@ -931,10 +915,10 @@ class Component extends DCLogic {
     const ago = s.lastSync ? Math.max(0, Math.round((Date.now() - s.lastSync) / 1000)) : 0;
     const agoTxt = ago < 10 ? 'just now' : ago < 60 ? ago + 's ago' : ago < 3600 ? Math.round(ago / 60) + 'm ago' : Math.round(ago / 3600) + 'h ago';
     const pendTxt = s.pend ? s.pend + ' change' + (s.pend > 1 ? 's' : '') + ' waiting' : 'All changes saved';
-    const syncSt = isSheet ? s.syncSt : s.mode === 'demo' ? 'demo' : 'idle';
-    const syncColor = { synced: '#12C79A', syncing: '#FF8A00', offline: '#8E8D99', error: '#FF2E63', demo: '#6B4BFF', idle: '#8E8D99' }[syncSt];
-    const syncShort = { synced: 'Synced', syncing: 'Syncing', offline: 'Offline' + (s.pend ? ' · ' + s.pend : ''), error: 'Retrying', demo: 'Demo', idle: '—' }[syncSt];
-    const syncText = { synced: 'Synced ' + agoTxt, syncing: 'Syncing…', offline: 'Offline · ' + pendTxt, error: 'Sync failed, retrying · ' + pendTxt, demo: 'Demo data · not saved to a sheet', idle: 'Not connected' }[syncSt];
+    const syncSt = isSheet ? s.syncSt : 'idle';
+    const syncColor = { synced: '#12C79A', syncing: '#FF8A00', offline: '#8E8D99', error: '#FF2E63', idle: '#8E8D99' }[syncSt];
+    const syncShort = { synced: 'Synced', syncing: 'Syncing', offline: 'Offline' + (s.pend ? ' · ' + s.pend : ''), error: 'Retrying', idle: '—' }[syncSt];
+    const syncText = { synced: 'Synced ' + agoTxt, syncing: 'Syncing…', offline: 'Offline · ' + pendTxt, error: 'Sync failed, retrying · ' + pendTxt, idle: 'Not connected' }[syncSt];
     let host = ''; try { host = this.cfg ? new URL(this.cfg.url).hostname + '/…' + this.cfg.url.slice(-12) : ''; } catch (e) {}
 
     const sheetBox = desk
@@ -971,7 +955,7 @@ class Component extends DCLogic {
       nav: { today: navS('today'), board: navS('board'), review: navS('review'), search: navS('search') },
       // sync / account
       syncColor, syncShort, syncText, meInitial: (this.me()[0] || 'B').toUpperCase(), isSheet,
-      acctTitle: isSheet ? 'Google Sheet connected' : s.mode === 'demo' ? 'Demo mode' : 'Not connected', acctHost: host || 'None', acctMe: this.me(), acctPend: String(s.pend),
+      acctTitle: isSheet ? 'Google Sheet connected' : 'Not connected', acctHost: host || 'None', acctMe: this.me(), acctPend: String(s.pend),
       syncNow: () => this.sync(), acctActionLabel: isSheet ? 'Sign out' : 'Connect a sheet', acctAction: () => isSheet ? this.signOut('') : this.go('login'),
       // login
       lUrl: s.lUrl, lKey: s.lKey, lMe: s.lMe, onLUrl: e => this.setState({ lUrl: e.target.value }), onLKey: e => this.setState({ lKey: e.target.value }), onLMe: e => this.setState({ lMe: e.target.value }),
