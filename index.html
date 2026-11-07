@@ -16,7 +16,7 @@
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" href="icon-192.png">
 <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500;600&display=swap" rel="stylesheet">
-<style>*{scrollbar-width:none}body{margin:0;background:#DEDCD6;-webkit-font-smoothing:antialiased}a{color:#0F0F12}a:hover{color:#6B4BFF}input::placeholder{color:#8E8D99}*::-webkit-scrollbar{display:none}</style>
+<style>*{scrollbar-width:none;-webkit-tap-highlight-color:transparent}html,body{overscroll-behavior-y:none}@media (max-width:899px){html,body{height:100%;width:100%;overflow:hidden;position:fixed}}body{margin:0;background:#DEDCD6;-webkit-font-smoothing:antialiased}a{color:#0F0F12}a:hover{color:#6B4BFF}input::placeholder{color:#8E8D99}*::-webkit-scrollbar{display:none}</style>
 </helmet>
 <div style="min-height:{{ rootMinH }};display:flex;flex-direction:column;align-items:center;gap:20px;padding:{{ rootPad }};box-sizing:border-box;font-family:'Geist',system-ui,sans-serif">
   <div style="display:{{ jumpDisp }};flex-wrap:wrap;gap:6px;justify-content:center;max-width:720px">
@@ -27,6 +27,31 @@
   <div style="{{ frameStyle }}">
     <div style="{{ themeVars }}">
 
+<sc-if value="{{ showSide }}">
+        <aside style="width:248px;flex:none;box-sizing:border-box;padding:24px 16px;min-height:0;overflow-y:auto;display:flex;flex-direction:column;gap:22px;border-right:1px solid var(--line)">
+          <div style="display:flex;align-items:center;gap:10px;padding:0 8px">
+            <span style="width:30px;height:30px;border-radius:9px;background:var(--ink);display:flex;align-items:flex-end;justify-content:center;gap:2px;padding:7px 6px;box-sizing:border-box"><span style="width:4px;height:100%;border-radius:2px;background:#FF2E63"></span><span style="width:4px;height:75%;border-radius:2px;background:#FF8A00"></span><span style="width:4px;height:52%;border-radius:2px;background:#6B4BFF"></span><span style="width:4px;height:30%;border-radius:2px;background:#C8FF2E"></span></span>
+            <span style="font:700 20px 'Geist',sans-serif;letter-spacing:-.03em;color:var(--ink)">BGDX</span>
+          </div>
+          <button onClick="{{ openSheet }}" style="height:48px;border:none;border-radius:24px;background:var(--sig);color:#0F0F12;font:600 15px 'Geist',sans-serif;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:10px"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M12 5v14M5 12h14"></path></svg>New task<span style="font:600 11px 'Geist Mono',monospace;padding:2px 6px;border-radius:6px;background:rgba(15,15,18,.12)">N</span></button>
+          <nav style="display:flex;flex-direction:column;gap:4px">
+            <sc-for list="{{ sideNav }}" as="n" hint-placeholder-count="4">
+              <button onClick="{{ n.onClick }}" style="height:46px;border:none;border-radius:23px;padding:0 16px;display:flex;align-items:center;gap:12px;cursor:pointer;font:500 15px 'Geist',sans-serif;transition:background .2s;text-align:left;background:{{ n.bg }};color:{{ n.fg }}"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="{{ n.d }}"></path></svg><span style="flex:1">{{ n.label }}</span><span style="font:500 12px 'Geist Mono',monospace;opacity:.7">{{ n.badge }}</span></button>
+            </sc-for>
+          </nav>
+          <span style="flex:1"></span>
+          <div style="display:flex;flex-direction:column;gap:10px;padding:0 8px">
+            <span style="font:500 11px 'Geist Mono',monospace;color:var(--mute);letter-spacing:.08em">PRIORITY</span>
+            <sc-for list="{{ priLegend }}" as="p" hint-placeholder-count="4"><span style="display:flex;align-items:center;gap:10px;font:500 13px 'Geist',sans-serif;color:var(--ink)"><span style="width:10px;height:10px;border-radius:5px;background:{{ p.c }}"></span><span style="font-family:'Geist Mono',monospace;color:var(--mute);width:22px">{{ p.label }}</span>{{ p.name }}</span></sc-for>
+          </div>
+          <div style="display:flex;align-items:center;gap:10px;padding-top:16px;border-top:1px solid var(--line)">
+            <button onClick="{{ goAccount }}" aria-label="Account" style="width:40px;height:40px;border-radius:20px;border:none;cursor:pointer;background:var(--ink);color:var(--bg);display:flex;align-items:center;justify-content:center;font:600 11px 'Geist Mono',monospace">{{ meInitial }}</button>
+            <div style="flex:1;display:flex;flex-direction:column;gap:2px"><span style="font:600 14px 'Geist',sans-serif;color:var(--ink)">BGD MART</span><span style="font:400 12px 'Geist Mono',monospace;color:var(--mute)">{{ syncText }}</span></div>
+            <button onClick="{{ toggleDark }}" aria-label="Toggle theme" style="width:40px;height:40px;border-radius:20px;border:none;background:var(--surf);color:var(--ink);cursor:pointer;display:flex;align-items:center;justify-content:center"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"><path d="{{ themeIcon }}"></path></svg></button>
+          </div>
+        </aside>
+      </sc-if>
+      <div style="{{ mainOuter }}"><div style="{{ mainInner }}">
       <!-- ONBOARDING -->
       <sc-if value="{{ isOnboard }}">
         <div style="flex:1;display:flex;flex-direction:column;padding:24px 24px 28px">
@@ -62,13 +87,9 @@
           </sc-if>
           <sc-if value="{{ ob2 }}">
             <div style="flex:1;display:flex;flex-direction:column;justify-content:center;gap:24px">
-              <div style="font:600 34px/1.05 'Geist',sans-serif;letter-spacing:-.03em;color:var(--ink);text-wrap:pretty">Link your repo.<br>Close tasks with PRs.</div>
-              <div style="font:400 16px/1.45 'Geist',sans-serif;color:var(--mute);text-wrap:pretty">Mention <span style="font-family:'Geist Mono',monospace;color:var(--ink)">BX-014</span> in a PR and the task moves to Done when it merges.</div>
-              <button onClick="{{ toggleGh }}" style="display:flex;align-items:center;gap:14px;padding:18px;border-radius:18px;border:1px solid var(--line);background:var(--surf);cursor:pointer;text-align:left;font:inherit;color:var(--ink)">
-                <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="6" cy="5" r="2"></circle><circle cx="6" cy="19" r="2"></circle><circle cx="18" cy="19" r="2"></circle><path d="M6 7v10M18 17V9a3 3 0 00-3-3h-4"></path><path d="M13 3.5L10.5 6 13 8.5"></path></svg>
-                <span style="flex:1;display:flex;flex-direction:column;gap:2px"><span style="font:600 16px 'Geist',sans-serif">GitHub</span><span style="font:400 13px 'Geist Mono',monospace;color:var(--mute)">{{ ghSub }}</span></span>
-                <span style="font:600 13px 'Geist',sans-serif;padding:8px 12px;border-radius:999px;background:{{ ghBtnBg }};color:{{ ghBtnFg }}">{{ ghBtn }}</span>
-              </button>
+              <div style="font:600 34px/1.05 'Geist',sans-serif;letter-spacing:-.03em;color:var(--ink);text-wrap:pretty">Your sheet<br>is the database.</div>
+              <div style="font:400 16px/1.45 'Geist',sans-serif;color:var(--mute);text-wrap:pretty">Edit in Google Sheets or in BGDX. Changes land instantly here, sync in the background, and queue up when you are offline.</div>
+              <div style="display:flex;align-items:center;gap:14px;padding:18px;border-radius:18px;border:1px solid var(--line);background:var(--surf);color:var(--ink)"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="3" width="16" height="18" rx="2"></rect><path d="M4 9h16M4 15h16M10 9v12"></path></svg><span style="flex:1;display:flex;flex-direction:column;gap:2px"><span style="font:600 16px 'Geist',sans-serif">Google Sheets</span><span style="font:400 13px 'Geist Mono',monospace;color:var(--mute)">Secured with your access key</span></span></div>
             </div>
           </sc-if>
           <div style="display:flex;align-items:center;justify-content:space-between;gap:16px">
@@ -80,21 +101,57 @@
         </div>
       </sc-if>
 
+      <sc-if value="{{ isLogin }}">
+        <div style="flex:1;overflow:auto;padding:32px 24px;display:flex;flex-direction:column;gap:20px;justify-content:center">
+          <div style="font:700 56px/0.9 'Geist',sans-serif;letter-spacing:-.05em;color:var(--ink)">BGDX</div>
+          <div style="font:600 26px/1.1 'Geist',sans-serif;letter-spacing:-.025em;color:var(--ink)">Connect your sheet</div>
+          <div style="font:400 15px/1.45 'Geist',sans-serif;color:var(--mute);text-wrap:pretty">Paste the web app URL and the access key from your Apps Script setup.</div>
+          <div style="display:flex;flex-direction:column;gap:8px"><span style="font:500 11px 'Geist Mono',monospace;letter-spacing:.08em;color:var(--mute);padding:0 4px">WEB APP URL</span><input value="{{ lUrl }}" onChange="{{ onLUrl }}" placeholder="https://script.google.com/macros/s/…/exec" autocomplete="off" autocapitalize="off" style="width:100%;box-sizing:border-box;height:52px;border-radius:18px;border:1px solid var(--line);background:var(--surf);padding:0 16px;font:400 16px 'Geist',sans-serif;color:var(--ink);outline:none"></div>
+          <div style="display:flex;flex-direction:column;gap:8px"><span style="font:500 11px 'Geist Mono',monospace;letter-spacing:.08em;color:var(--mute);padding:0 4px">ACCESS KEY</span><input type="password" value="{{ lKey }}" onChange="{{ onLKey }}" placeholder="Your secret key" autocomplete="off" style="width:100%;box-sizing:border-box;height:52px;border-radius:18px;border:1px solid var(--line);background:var(--surf);padding:0 16px;font:400 16px 'Geist',sans-serif;color:var(--ink);outline:none"></div>
+          <div style="display:flex;flex-direction:column;gap:8px"><span style="font:500 11px 'Geist Mono',monospace;letter-spacing:.08em;color:var(--mute);padding:0 4px">YOUR NAME IN THE SHEET</span><input value="{{ lMe }}" onChange="{{ onLMe }}" placeholder="Owner name, e.g. Nafis" style="width:100%;box-sizing:border-box;height:52px;border-radius:18px;border:1px solid var(--line);background:var(--surf);padding:0 16px;font:400 16px 'Geist',sans-serif;color:var(--ink);outline:none"></div>
+          <sc-if value="{{ hasLErr }}"><div style="padding:14px 16px;border-radius:16px;background:#FF2E63;color:#fff;font:500 14px/1.4 'Geist',sans-serif">{{ lErr }}</div></sc-if>
+          <button onClick="{{ doConnect }}" style="height:56px;border:none;border-radius:28px;background:var(--sig);color:#0F0F12;font:600 16px 'Geist',sans-serif;cursor:pointer">{{ lBtn }}</button>
+          <button onClick="{{ useDemo }}" style="height:44px;border:none;background:none;color:var(--mute);font:500 14px 'Geist',sans-serif;cursor:pointer">Try with demo data</button>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ isAccount }}">
+        <div style="flex:1;overflow:auto;padding:8px 16px 110px;display:flex;flex-direction:column;gap:8px">
+          <div style="display:flex;align-items:center;gap:6px;height:52px">
+            <button onClick="{{ back }}" aria-label="Back" style="width:44px;height:44px;margin-left:-6px;border:none;background:none;color:var(--ink);cursor:pointer;display:flex;align-items:center;justify-content:center"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"></path></svg></button>
+            <span style="font:600 26px 'Geist',sans-serif;letter-spacing:-.03em;color:var(--ink)">Account</span>
+          </div>
+          <div style="background:var(--surf);border-radius:22px;padding:18px;display:flex;align-items:center;gap:14px">
+            <span style="width:14px;height:14px;border-radius:7px;flex:none;background:{{ syncColor }}"></span>
+            <div style="flex:1;display:flex;flex-direction:column;gap:4px"><span style="font:600 17px 'Geist',sans-serif;color:var(--ink)">{{ acctTitle }}</span><span style="font:400 13px/1.4 'Geist Mono',monospace;color:var(--mute)">{{ syncText }}</span></div>
+          </div>
+          <div style="background:var(--surf);border-radius:22px;padding:6px 18px">
+            <div style="display:flex;justify-content:space-between;gap:12px;padding:14px 0;border-bottom:1px solid var(--line)"><span style="font:500 12px 'Geist Mono',monospace;color:var(--mute)">SHEET</span><span style="font:500 14px 'Geist',sans-serif;color:var(--ink);text-align:right;word-break:break-all">{{ acctHost }}</span></div>
+            <div style="display:flex;justify-content:space-between;gap:12px;padding:14px 0;border-bottom:1px solid var(--line)"><span style="font:500 12px 'Geist Mono',monospace;color:var(--mute)">SIGNED IN AS</span><span style="font:500 14px 'Geist',sans-serif;color:var(--ink)">{{ acctMe }}</span></div>
+            <div style="display:flex;justify-content:space-between;gap:12px;padding:14px 0"><span style="font:500 12px 'Geist Mono',monospace;color:var(--mute)">PENDING CHANGES</span><span style="font:500 14px 'Geist',sans-serif;color:var(--ink)">{{ acctPend }}</span></div>
+          </div>
+          <sc-if value="{{ isSheet }}"><button onClick="{{ syncNow }}" style="height:56px;border:none;border-radius:28px;background:var(--sig);color:#0F0F12;font:600 16px 'Geist',sans-serif;cursor:pointer;margin-top:8px">Sync now</button></sc-if>
+          <button onClick="{{ acctAction }}" style="height:56px;border:none;border-radius:28px;background:var(--ink);color:var(--bg);font:600 16px 'Geist',sans-serif;cursor:pointer">{{ acctActionLabel }}</button>
+          <button onClick="{{ toggleDark }}" style="height:56px;border:none;border-radius:28px;background:var(--surf);color:var(--ink);font:600 16px 'Geist',sans-serif;cursor:pointer">Switch theme</button>
+          <div style="text-align:center;font:400 12px 'Geist Mono',monospace;color:var(--mute);padding-top:8px">BGDX v{{ version }}</div>
+        </div>
+      </sc-if>
+
       <!-- TODAY -->
       <sc-if value="{{ isToday }}">
         <div style="flex:1;overflow:auto;padding:8px 16px 110px">
           <div style="display:flex;align-items:center;justify-content:space-between;height:48px">
             <span style="font:700 17px 'Geist',sans-serif;letter-spacing:-.03em;color:var(--ink)">BGDX</span>
             <div style="display:flex;gap:8px;align-items:center">
-              <button onClick="{{ toggleDark }}" aria-label="Toggle theme" style="width:44px;height:44px;border-radius:22px;border:none;background:var(--surf);color:var(--ink);cursor:pointer;display:flex;align-items:center;justify-content:center">
+              <span style="display:flex;align-items:center;gap:6px;font:500 11px 'Geist Mono',monospace;color:var(--mute)"><span style="width:8px;height:8px;border-radius:4px;background:{{ syncColor }}"></span>{{ syncShort }}</span><button onClick="{{ toggleDark }}" aria-label="Toggle theme" style="width:44px;height:44px;border-radius:22px;border:none;background:var(--surf);color:var(--ink);cursor:pointer;display:flex;align-items:center;justify-content:center">
                 <sc-if value="{{ dark }}"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4"></circle><path d="M12 2.5v2M12 19.5v2M2.5 12h2M19.5 12h2M5.3 5.3l1.4 1.4M17.3 17.3l1.4 1.4M5.3 18.7l1.4-1.4M17.3 6.7l1.4-1.4"></path></svg></sc-if>
                 <sc-if value="{{ light }}"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M20 14.5A8 8 0 019.5 4a8 8 0 1010.5 10.5z"></path></svg></sc-if>
               </button>
-              <div style="width:44px;height:44px;border-radius:22px;background:var(--ink);color:var(--bg);display:flex;align-items:center;justify-content:center;font:600 12px 'Geist Mono',monospace">CTO</div>
+              <button onClick="{{ goAccount }}" aria-label="Account" style="width:44px;height:44px;border-radius:22px;border:none;cursor:pointer;background:var(--ink);color:var(--bg);display:flex;align-items:center;justify-content:center;font:600 12px 'Geist Mono',monospace">{{ meInitial }}</button>
             </div>
           </div>
           <div style="padding:18px 4px 20px">
-            <div style="font:500 14px 'Geist Mono',monospace;color:var(--mute);letter-spacing:.02em">SAT · NOV 7</div>
+            <div style="font:500 14px 'Geist Mono',monospace;color:var(--mute);letter-spacing:.02em">{{ dateLabel }}</div>
             <div style="font:600 40px/1 'Geist',sans-serif;letter-spacing:-.04em;color:var(--ink);margin-top:8px">{{ todayHeadline }}</div>
             <div style="display:flex;gap:3px;margin-top:18px;height:6px">
               <sc-for list="{{ todaySegs }}" as="s" hint-placeholder-count="5"><div style="flex:1;border-radius:3px;transition:background .3s;background:{{ s.bg }}"></div></sc-for>
@@ -119,8 +176,9 @@
             </div>
           </sc-if>
 
+          <div style="margin-bottom:14px"><div style="display:flex;gap:6px;overflow-x:auto;margin:0 -16px;padding:0 16px"><sc-for list="{{ ownerChips }}" as="o" hint-placeholder-count="4"><button onClick="{{ o.onClick }}" style="flex:none;height:36px;padding:0 14px;border:none;border-radius:18px;cursor:pointer;font:500 13px 'Geist',sans-serif;background:{{ o.bg }};color:{{ o.fg }}">{{ o.label }}</button></sc-for></div></div>
           <div style="display:flex;justify-content:space-between;align-items:baseline;padding:0 4px 10px">
-            <span style="font:600 15px 'Geist',sans-serif;color:var(--ink)">Due today</span>
+            <span style="font:600 15px 'Geist',sans-serif;color:var(--ink);white-space:nowrap">Due &amp; overdue</span>
             <span style="font:500 13px 'Geist Mono',monospace;color:var(--mute)">{{ todayLeftN }}</span>
           </div>
           <div style="display:flex;flex-direction:column;gap:8px">
@@ -133,7 +191,7 @@
                   <div style="font:500 15px/1.3 'Geist',sans-serif;color:var(--ink);text-wrap:pretty;text-decoration:{{ t.deco }}">{{ t.title }}</div>
                   <div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center;font:500 12px 'Geist Mono',monospace;color:var(--mute)">
                     <span style="padding:3px 7px;border-radius:7px;background:{{ t.c }};color:{{ t.on }}">{{ t.pl }}</span>
-                    <span style="padding:3px 7px;border-radius:7px;background:var(--surf2);color:var(--ink)">{{ t.type }}</span>
+                    <span style="padding:3px 7px;border-radius:7px;background:var(--surf2);color:var(--ink)">{{ t.typeO }}</span>
                     <sc-if value="{{ t.hasSubs }}"><span>☐ {{ t.subTxt }}</span></sc-if>
                     <sc-if value="{{ t.hasPr }}"><span>PR {{ t.pr }}</span></sc-if>
                   </div>
@@ -165,11 +223,12 @@
             <span style="font:600 28px 'Geist',sans-serif;letter-spacing:-.03em;color:var(--ink)">Board</span>
             <span style="font:500 13px 'Geist Mono',monospace;color:var(--mute);white-space:nowrap">{{ openCount }}</span>
           </div>
-          <div style="display:flex;gap:6px;padding:14px 16px 12px">
+          <div style="display:flex;gap:6px;padding:14px 16px 12px;overflow-x:auto">
             <sc-for list="{{ colTabs }}" as="c" hint-placeholder-count="3">
-              <button onClick="{{ c.onClick }}" style="flex:1;height:44px;border:none;border-radius:22px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;font:600 14px 'Geist',sans-serif;transition:all .2s;background:{{ c.bg }};color:{{ c.fg }}">{{ c.name }}<span style="font:500 12px 'Geist Mono',monospace;opacity:.7">{{ c.n }}</span></button>
+              <button onClick="{{ c.onClick }}" style="flex:none;padding:0 16px;height:44px;border:none;border-radius:22px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;font:600 14px 'Geist',sans-serif;transition:all .2s;background:{{ c.bg }};color:{{ c.fg }}">{{ c.name }}<span style="font:500 12px 'Geist Mono',monospace;opacity:.7">{{ c.n }}</span></button>
             </sc-for>
           </div>
+          <div style="padding:0 16px 12px"><div style="display:flex;gap:6px;overflow-x:auto;margin:0 -16px;padding:0 16px"><sc-for list="{{ ownerChips }}" as="o" hint-placeholder-count="4"><button onClick="{{ o.onClick }}" style="flex:none;height:36px;padding:0 14px;border:none;border-radius:18px;cursor:pointer;font:500 13px 'Geist',sans-serif;background:{{ o.bg }};color:{{ o.fg }}">{{ o.label }}</button></sc-for></div></div>
           <div style="flex:1;overflow:auto;padding:0 16px 110px;display:flex;flex-direction:column;gap:10px">
             <sc-for list="{{ colItems }}" as="t" hint-placeholder-count="4">
               <div onClick="{{ t.open }}" style="background:var(--surf);border-radius:22px;padding:16px;cursor:pointer;display:flex;flex-direction:column;gap:12px;position:relative;overflow:hidden">
@@ -180,7 +239,7 @@
                 </div>
                 <div style="font:500 16px/1.3 'Geist',sans-serif;color:var(--ink);text-wrap:pretty;text-decoration:{{ t.deco }}">{{ t.title }}</div>
                 <div style="display:flex;align-items:center;gap:10px;font:500 12px 'Geist Mono',monospace;color:var(--mute)">
-                  <span style="padding:3px 7px;border-radius:7px;background:var(--surf2);color:var(--ink)">{{ t.type }}</span>
+                  <span style="padding:3px 7px;border-radius:7px;background:var(--surf2);color:var(--ink)">{{ t.typeO }}</span>
                   <sc-if value="{{ t.hasSubs }}">
                     <span style="display:flex;align-items:center;gap:6px"><span style="width:36px;height:4px;border-radius:2px;background:var(--surf2);overflow:hidden;display:block"><span style="display:block;height:100%;background:{{ t.c }};width:{{ t.subPct }}"></span></span>{{ t.subTxt }}</span>
                   </sc-if>
@@ -197,13 +256,42 @@
         </div>
       </sc-if>
 
+<sc-if value="{{ isBoardDesk }}">
+        <div style="flex:1;display:flex;flex-direction:column;min-height:0;padding:28px 32px 0">
+          <div style="display:flex;align-items:baseline;gap:14px"><span style="font:600 32px 'Geist',sans-serif;letter-spacing:-.03em;color:var(--ink)">Board</span><span style="font:500 13px 'Geist Mono',monospace;color:var(--mute);white-space:nowrap">{{ openCount }}</span></div>
+          <div style="padding:16px 0 0;margin-bottom:-2px"><div style="display:flex;gap:6px;overflow-x:auto;margin:0 -16px;padding:0 16px"><sc-for list="{{ ownerChips }}" as="o" hint-placeholder-count="4"><button onClick="{{ o.onClick }}" style="flex:none;height:36px;padding:0 14px;border:none;border-radius:18px;cursor:pointer;font:500 13px 'Geist',sans-serif;background:{{ o.bg }};color:{{ o.fg }}">{{ o.label }}</button></sc-for></div></div>
+          <div style="flex:1;display:grid;grid-template-columns:repeat(5,minmax(250px,1fr));gap:14px;min-height:0;overflow-x:auto;padding:18px 0 28px">
+            <sc-for list="{{ boardCols }}" as="c" hint-placeholder-count="3">
+              <div style="display:flex;flex-direction:column;min-height:0;background:var(--surf2);border-radius:26px;padding:8px">
+                <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 12px 14px"><span style="display:flex;align-items:center;gap:10px;font:600 15px 'Geist',sans-serif;color:var(--ink)"><span style="width:10px;height:10px;border-radius:5px;background:{{ c.dot }}"></span>{{ c.name }}</span><span style="font:600 12px 'Geist Mono',monospace;padding:3px 9px;border-radius:10px;background:var(--surf);color:var(--ink)">{{ c.n }}</span></div>
+                <div style="flex:1;overflow:auto;display:flex;flex-direction:column;gap:8px">
+                  <sc-for list="{{ c.items }}" as="t" hint-placeholder-count="3">
+                    <div onClick="{{ t.open }}" style="background:var(--surf);border-radius:20px;padding:14px;cursor:pointer;display:flex;flex-direction:column;gap:10px">
+                      <div style="display:flex;align-items:center;gap:8px"><span style="font:600 11px 'Geist Mono',monospace;padding:3px 7px;border-radius:7px;background:{{ t.c }};color:{{ t.on }}">{{ t.pl }}</span><span style="font:500 11px 'Geist Mono',monospace;color:var(--mute);flex:1">{{ t.key }}</span><span style="font:500 11px 'Geist Mono',monospace;color:var(--mute);white-space:nowrap">{{ t.due }}</span></div>
+                      <div style="font:500 15px/1.3 'Geist',sans-serif;color:var(--ink);text-wrap:pretty;text-decoration:{{ t.deco }}">{{ t.title }}</div>
+                      <div style="display:flex;align-items:center;flex-wrap:wrap;gap:8px;font:500 11px 'Geist Mono',monospace;color:var(--mute);white-space:nowrap">
+                        <span style="padding:3px 7px;border-radius:7px;background:var(--surf2);color:var(--ink)">{{ t.typeO }}</span>
+                        <sc-if value="{{ t.hasSubs }}"><span>☐ {{ t.subTxt }}</span></sc-if>
+                        <sc-if value="{{ t.hasPr }}"><span>PR {{ t.pr }}</span></sc-if>
+                        <span style="flex:1"></span>
+                        <button onClick="{{ t.advance }}" style="height:30px;padding:0 11px;border-radius:15px;border:1px solid var(--line);background:transparent;color:var(--ink);font:600 12px 'Geist',sans-serif;cursor:pointer;white-space:nowrap;flex:none">{{ t.advLabel }}</button>
+                      </div>
+                    </div>
+                  </sc-for>
+                </div>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+      </sc-if>
+
       <!-- SEARCH -->
       <sc-if value="{{ isSearch }}">
         <div style="flex:1;display:flex;flex-direction:column;min-height:0">
           <div style="padding:16px 16px 8px">
             <div style="display:flex;align-items:center;gap:10px;height:52px;padding:0 16px;border-radius:26px;background:var(--surf);color:var(--mute)">
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="6.5"></circle><path d="M20 20l-4-4"></path></svg>
-              <input value="{{ q }}" onChange="{{ onQ }}" placeholder="Search tasks, BX-ids, PRs" style="flex:1;border:none;outline:none;background:transparent;font:400 16px 'Geist',sans-serif;color:var(--ink);min-width:0">
+              <input value="{{ q }}" onChange="{{ onQ }}" placeholder="Search tasks, IDs, owners" style="flex:1;border:none;outline:none;background:transparent;font:400 16px 'Geist',sans-serif;color:var(--ink);min-width:0">
               <sc-if value="{{ hasQ }}"><button onClick="{{ clearQ }}" aria-label="Clear" style="border:none;background:none;color:var(--mute);cursor:pointer;padding:8px;display:flex"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"></path></svg></button></sc-if>
             </div>
           </div>
@@ -218,9 +306,10 @@
                 <button onClick="{{ f.onClick }}" style="flex:none;height:36px;padding:0 14px;border:none;border-radius:18px;cursor:pointer;font:500 13px 'Geist',sans-serif;background:{{ f.bg }};color:{{ f.fg }}">{{ f.label }}</button>
               </sc-for>
             </div>
-            <div style="display:flex;gap:4px;padding:4px;border-radius:14px;background:var(--surf)">
+            <div style="display:flex;gap:6px;overflow-x:auto;margin:0 -16px;padding:0 16px"><sc-for list="{{ ownerChips }}" as="o" hint-placeholder-count="4"><button onClick="{{ o.onClick }}" style="flex:none;height:36px;padding:0 14px;border:none;border-radius:18px;cursor:pointer;font:500 13px 'Geist',sans-serif;background:{{ o.bg }};color:{{ o.fg }}">{{ o.label }}</button></sc-for></div>
+            <div style="display:flex;gap:6px;overflow-x:auto;margin:0 -16px;padding:0 16px">
               <sc-for list="{{ statusFilters }}" as="f" hint-placeholder-count="4">
-                <button onClick="{{ f.onClick }}" style="flex:1;height:36px;border:none;border-radius:10px;cursor:pointer;font:500 13px 'Geist',sans-serif;background:{{ f.bg }};color:{{ f.fg }}">{{ f.label }}</button>
+                <button onClick="{{ f.onClick }}" style="flex:none;height:36px;padding:0 14px;border:none;border-radius:18px;cursor:pointer;font:500 13px 'Geist',sans-serif;background:{{ f.bg }};color:{{ f.fg }}">{{ f.label }}</button>
               </sc-for>
             </div>
           </div>
@@ -231,7 +320,7 @@
                 <span style="width:4px;align-self:stretch;border-radius:2px;flex:none;background:{{ t.c }}"></span>
                 <div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:4px">
                   <span style="font:500 14px/1.3 'Geist',sans-serif;color:var(--ink);text-decoration:{{ t.deco }}">{{ t.title }}</span>
-                  <span style="font:500 12px 'Geist Mono',monospace;color:var(--mute)">{{ t.key }} · {{ t.type }} · {{ t.statusName }}</span>
+                  <span style="font:500 12px 'Geist Mono',monospace;color:var(--mute)">{{ t.key }} · {{ t.typeO }} · {{ t.statusName }}</span>
                 </div>
                 <span style="font:600 12px 'Geist Mono',monospace;color:var(--mute)">{{ t.pl }}</span>
               </div>
@@ -244,7 +333,7 @@
       <sc-if value="{{ isReview }}">
         <div style="flex:1;overflow:auto;padding:8px 16px 110px">
           <div style="padding:8px 4px 20px">
-            <div style="font:500 14px 'Geist Mono',monospace;color:var(--mute)">WEEK 45 · NOV 2–8</div>
+            <div style="font:500 14px 'Geist Mono',monospace;color:var(--mute)">{{ weekLabel }}</div>
             <div style="font:600 28px 'Geist',sans-serif;letter-spacing:-.03em;color:var(--ink);margin-top:6px">Weekly review</div>
           </div>
           <div style="background:var(--ink);color:var(--bg);border-radius:26px;padding:22px;display:flex;flex-direction:column;gap:20px">
@@ -253,7 +342,7 @@
                 <div style="font:700 72px/0.85 'Geist',sans-serif;letter-spacing:-.05em">{{ doneCount }}</div>
                 <div style="font:500 14px 'Geist',sans-serif;margin-top:10px;opacity:.7">tasks shipped</div>
               </div>
-              <span style="font:600 13px 'Geist Mono',monospace;padding:6px 10px;border-radius:10px;background:var(--sig);color:#0F0F12">+3 vs wk 44</span>
+              <span style="font:600 13px 'Geist Mono',monospace;padding:6px 10px;border-radius:10px;background:var(--sig);color:#0F0F12">{{ weekDelta }}</span>
             </div>
             <div style="display:flex;align-items:flex-end;gap:8px;height:96px">
               <sc-for list="{{ week }}" as="d" hint-placeholder-count="7">
@@ -266,12 +355,12 @@
           </div>
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px">
             <div style="background:var(--surf);border-radius:20px;padding:16px;display:flex;flex-direction:column;gap:6px">
-              <span style="font:600 26px 'Geist',sans-serif;letter-spacing:-.03em;color:var(--ink)">{{ focusTime }}</span>
-              <span style="font:400 13px 'Geist',sans-serif;color:var(--mute)">in focus mode</span>
+              <span style="font:600 26px 'Geist',sans-serif;letter-spacing:-.03em;color:var(--ink)">{{ blockedN }}</span>
+              <span style="font:400 13px 'Geist',sans-serif;color:var(--mute)">blocked now</span>
             </div>
             <div style="background:var(--surf);border-radius:20px;padding:16px;display:flex;flex-direction:column;gap:6px">
-              <span style="font:600 26px 'Geist',sans-serif;letter-spacing:-.03em;color:var(--ink)">{{ bugsClosed }}</span>
-              <span style="font:400 13px 'Geist',sans-serif;color:var(--mute)">bugs closed</span>
+              <span style="font:600 26px 'Geist',sans-serif;letter-spacing:-.03em;color:var(--ink)">{{ overdueN }}</span>
+              <span style="font:400 13px 'Geist',sans-serif;color:var(--mute)">overdue</span>
             </div>
           </div>
           <div style="background:var(--surf);border-radius:20px;padding:18px 16px;margin-top:8px;display:flex;flex-direction:column;gap:14px">
@@ -298,7 +387,7 @@
             </sc-for>
           </div>
           <div style="display:flex;align-items:center;gap:12px;margin-top:8px;padding:16px;border-radius:20px;border:1.5px dashed var(--line)">
-            <span style="flex:1;font:400 14px/1.4 'Geist',sans-serif;color:var(--mute)"><span style="color:var(--ink);font-weight:600">{{ carryN }} open tasks</span> roll into week 46.</span>
+            <span style="flex:1;font:400 14px/1.4 'Geist',sans-serif;color:var(--mute)"><span style="color:var(--ink);font-weight:600">{{ carryN }} open tasks</span> still open.</span>
             <button onClick="{{ goBoard }}" style="border:none;height:40px;padding:0 16px;border-radius:20px;background:var(--surf2);color:var(--ink);font:600 13px 'Geist',sans-serif;cursor:pointer">Plan</button>
           </div>
         </div>
@@ -314,14 +403,14 @@
             </div>
             <div style="font:600 12px 'Geist Mono',monospace;letter-spacing:.08em;opacity:.85;margin-top:6px">{{ d.pl }} {{ d.pn }} · {{ d.type }}</div>
             <div style="font:600 27px/1.12 'Geist',sans-serif;letter-spacing:-.025em;margin-top:10px;text-wrap:pretty">{{ d.title }}</div>
-            <div style="font:500 13px 'Geist Mono',monospace;margin-top:14px;opacity:.85">Due {{ d.due }}</div>
+            <div style="font:500 13px 'Geist Mono',monospace;margin-top:14px;opacity:.85">{{ d.dueLine }}</div>
           </div>
           <div style="padding:12px 16px;display:flex;flex-direction:column;gap:8px">
             <div style="background:var(--surf);border-radius:20px;padding:14px;display:flex;flex-direction:column;gap:12px">
               <span style="font:500 12px 'Geist Mono',monospace;color:var(--mute);padding-left:4px">STATUS</span>
-              <div style="display:flex;gap:4px;padding:4px;border-radius:14px;background:var(--surf2)">
+              <div style="display:flex;flex-wrap:wrap;gap:6px">
                 <sc-for list="{{ statusOpts }}" as="s" hint-placeholder-count="3">
-                  <button onClick="{{ s.onClick }}" style="flex:1;height:40px;border:none;border-radius:10px;cursor:pointer;font:600 14px 'Geist',sans-serif;transition:all .2s;background:{{ s.bg }};color:{{ s.fg }}">{{ s.label }}</button>
+                  <button onClick="{{ s.onClick }}" style="height:38px;padding:0 14px;border-radius:19px;cursor:pointer;font:600 13px 'Geist',sans-serif;transition:all .2s;border:2px solid {{ s.bd }};background:{{ s.bg }};color:{{ s.fg }}">{{ s.label }}</button>
                 </sc-for>
               </div>
               <span style="font:500 12px 'Geist Mono',monospace;color:var(--mute);padding:4px 0 0 4px">PRIORITY</span>
@@ -332,6 +421,15 @@
               </div>
             </div>
 
+            <div style="background:var(--surf);border-radius:20px;padding:14px;display:flex;flex-direction:column;gap:12px">
+              <span style="font:500 12px 'Geist Mono',monospace;color:var(--mute);padding-left:4px">OWNER</span>
+              <div style="display:flex;flex-wrap:wrap;gap:6px"><sc-for list="{{ ownerOpts }}" as="o" hint-placeholder-count="4"><button onClick="{{ o.onClick }}" style="height:38px;padding:0 14px;border:none;border-radius:19px;cursor:pointer;font:500 13px 'Geist',sans-serif;background:{{ o.bg }};color:{{ o.fg }}">{{ o.label }}</button></sc-for></div>
+              <span style="font:500 12px 'Geist Mono',monospace;color:var(--mute);padding:4px 0 0 4px">COST</span>
+              <div style="display:flex;align-items:center;gap:10px"><button onClick="{{ toggleCost }}" style="height:44px;padding:0 16px;border-radius:14px;border:1px solid var(--line);background:var(--surf2);color:var(--ink);font:600 13px 'Geist Mono',monospace;cursor:pointer;white-space:nowrap">Required: {{ d.costReqTxt }}</button><input type="number" inputmode="decimal" value="{{ d.costVal }}" onChange="{{ onCost }}" placeholder="Tentative cost" style="flex:1;min-width:0;height:44px;box-sizing:border-box;border-radius:14px;border:1px solid var(--line);background:transparent;padding:0 14px;font:400 15px 'Geist',sans-serif;color:var(--ink);outline:none"></div>
+              <span style="font:500 12px 'Geist Mono',monospace;color:var(--mute);padding:4px 0 0 4px">NOTES</span>
+              <textarea value="{{ d.notes }}" onChange="{{ onNotes }}" rows="3" placeholder="Context, links, decisions" style="width:100%;box-sizing:border-box;border-radius:14px;border:1px solid var(--line);background:transparent;padding:12px 14px;font:400 15px/1.4 'Geist',sans-serif;color:var(--ink);outline:none;resize:vertical"></textarea>
+              <span style="font:500 12px 'Geist Mono',monospace;color:var(--mute);padding-left:4px">START {{ d.startTxt }} · END {{ d.endTxt }}</span>
+            </div>
             <div style="background:var(--surf);border-radius:20px;padding:14px 14px 8px;display:flex;flex-direction:column;gap:4px">
               <div style="display:flex;justify-content:space-between;align-items:center;padding:0 4px 8px">
                 <span style="font:500 12px 'Geist Mono',monospace;color:var(--mute)">CHECKLIST</span>
@@ -382,8 +480,8 @@
             </sc-if>
           </div>
         </div>
-        <div style="position:absolute;left:0;right:0;bottom:0;padding:12px 16px 16px;background:linear-gradient(transparent,var(--bg) 30%)">
-          <button onClick="{{ d.focus }}" style="width:100%;height:56px;border:none;border-radius:28px;background:var(--ink);color:var(--bg);font:600 16px 'Geist',sans-serif;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:10px"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M13 2L4 14h7l-1 8 9-12h-7z"></path></svg>Start focus session</button>
+        <div style="{{ detailBar }}">
+          <button onClick="{{ d.focus }}" style="width:100%;max-width:688px;height:56px;border:none;border-radius:28px;background:var(--ink);color:var(--bg);font:600 16px 'Geist',sans-serif;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:10px"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M13 2L4 14h7l-1 8 9-12h-7z"></path></svg>Start focus session</button>
         </div>
       </sc-if>
 
@@ -415,6 +513,7 @@
         </div>
       </sc-if>
 
+      </div></div>
       <!-- BOTTOM NAV -->
       <sc-if value="{{ showNav }}">
         <div style="position:absolute;left:12px;right:12px;bottom:calc(12px + env(safe-area-inset-bottom));height:68px;border-radius:34px;background:var(--surf);box-shadow:0 10px 30px rgba(0,0,0,.12),0 0 0 1px var(--line);display:flex;align-items:center;justify-content:space-around;padding:0 8px;z-index:20">
@@ -429,13 +528,14 @@
       <!-- QUICK ADD SHEET -->
       <div style="position:absolute;inset:0;z-index:40;pointer-events:{{ sheetPE }}">
         <div onClick="{{ closeSheet }}" style="position:absolute;inset:0;background:rgba(0,0,0,.45);transition:opacity .25s;opacity:{{ sheetOp }}"></div>
-        <div style="position:absolute;left:0;right:0;bottom:0;background:var(--surf);border-radius:28px 28px 0 0;padding:10px 16px 20px;display:flex;flex-direction:column;gap:14px;transition:transform .3s cubic-bezier(.2,.8,.2,1);transform:{{ sheetTf }}">
-          <div style="width:36px;height:4px;border-radius:2px;background:var(--line);align-self:center;margin-bottom:4px"></div>
+        <div style="{{ sheetBox }}">
+          <div style="width:36px;height:4px;border-radius:2px;background:var(--line);align-self:center;margin-bottom:4px;display:{{ handleDisp }}"></div>
           <div style="display:flex;align-items:flex-start;gap:12px">
             <span style="width:12px;height:12px;border-radius:6px;margin-top:9px;flex:none;transition:background .2s;background:{{ pv.c }}"></span>
             <textarea ref="{{ inputRef }}" value="{{ draft }}" onChange="{{ onDraft }}" onKeyDown="{{ onDraftKey }}" rows="2" placeholder="What needs doing?" style="flex:1;border:none;outline:none;resize:none;background:transparent;font:500 20px/1.35 'Geist',sans-serif;color:var(--ink);min-width:0"></textarea>
           </div>
-          <div style="font:400 12px 'Geist Mono',monospace;color:var(--mute);padding-left:24px">Shortcuts: !p0–!p3 · #bug #ops #infra…</div>
+          <div style="font:400 12px 'Geist Mono',monospace;color:var(--mute);padding-left:24px">Shortcuts: !p0–!p3 · #tech #ops · @name</div>
+          <div style="display:flex;gap:6px;overflow-x:auto;margin:0 -16px;padding:0 16px"><sc-for list="{{ sheetOwners }}" as="o" hint-placeholder-count="4"><button onClick="{{ o.onClick }}" style="flex:none;height:36px;padding:0 14px;border:1px solid var(--line);border-radius:18px;cursor:pointer;font:500 13px 'Geist',sans-serif;background:{{ o.bg }};color:{{ o.fg }}">@{{ o.label }}</button></sc-for></div>
           <div style="display:flex;gap:6px">
             <sc-for list="{{ sheetPri }}" as="p" hint-placeholder-count="4">
               <button onClick="{{ p.onClick }}" style="flex:1;height:44px;border-radius:14px;cursor:pointer;font:600 13px 'Geist Mono',monospace;transition:all .2s;border:2px solid {{ p.c }};background:{{ p.bg }};color:{{ p.fg }}">{{ p.label }}</button>
@@ -457,230 +557,399 @@
       </div>
 
       <sc-if value="{{ hasToast }}">
-        <div style="position:absolute;left:24px;right:24px;bottom:calc(96px + env(safe-area-inset-bottom));z-index:30;padding:14px 18px;border-radius:16px;background:var(--ink);color:var(--bg);font:500 14px 'Geist',sans-serif;display:flex;justify-content:space-between;align-items:center"><span>{{ toast }}</span><span style="font:500 12px 'Geist Mono',monospace;opacity:.7">BGDX</span></div>
+        <div style="{{ toastPos }}z-index:30;padding:14px 18px;border-radius:16px;background:var(--ink);color:var(--bg);font:500 14px 'Geist',sans-serif;display:flex;justify-content:space-between;align-items:center"><span>{{ toast }}</span><span style="font:500 12px 'Geist Mono',monospace;opacity:.7">BGDX</span></div>
       </sc-if>
     </div>
   </div>
 </div>
 </x-dc>
-<script type="text/x-dc" data-dc-script data-props="{&quot;theme&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;Light&quot;,&quot;Dark&quot;],&quot;default&quot;:&quot;Light&quot;,&quot;tsType&quot;:&quot;string&quot;},&quot;signature&quot;:{&quot;editor&quot;:&quot;color&quot;,&quot;options&quot;:[&quot;#C8FF2E&quot;,&quot;#00E0FF&quot;,&quot;#FF5CF0&quot;,&quot;#FFE14D&quot;],&quot;default&quot;:&quot;#C8FF2E&quot;,&quot;tsType&quot;:&quot;string&quot;},&quot;startScreen&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;Onboarding&quot;,&quot;Today&quot;],&quot;default&quot;:&quot;Onboarding&quot;,&quot;tsType&quot;:&quot;string&quot;}}">
+<script type="text/x-dc" data-dc-script data-props="{&quot;theme&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;Light&quot;,&quot;Dark&quot;],&quot;default&quot;:&quot;Light&quot;,&quot;tsType&quot;:&quot;string&quot;},&quot;signature&quot;:{&quot;editor&quot;:&quot;color&quot;,&quot;options&quot;:[&quot;#C8FF2E&quot;,&quot;#00E0FF&quot;,&quot;#FF5CF0&quot;,&quot;#FFE14D&quot;],&quot;default&quot;:&quot;#C8FF2E&quot;,&quot;tsType&quot;:&quot;string&quot;},&quot;startScreen&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;Auto&quot;,&quot;Onboarding&quot;,&quot;Login&quot;,&quot;Today&quot;],&quot;default&quot;:&quot;Auto&quot;,&quot;tsType&quot;:&quot;string&quot;},&quot;desktopView&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;Web app&quot;,&quot;Phone mockup&quot;],&quot;default&quot;:&quot;Web app&quot;,&quot;tsType&quot;:&quot;string&quot;}}">
 class Component extends DCLogic {
   PRI = [
-    { label: 'P0', name: 'Urgent', c: '#FF2E63', on: '#FFFFFF', hint: 'Store is bleeding' },
-    { label: 'P1', name: 'High', c: '#FF8A00', on: '#1F1100', hint: 'This week' },
-    { label: 'P2', name: 'Medium', c: '#6B4BFF', on: '#FFFFFF', hint: 'Soon' },
-    { label: 'P3', name: 'Low', c: '#12C79A', on: '#002A1F', hint: 'Someday' },
+    { label: 'P0', name: 'Highest', c: '#FF2E63', on: '#FFFFFF', hint: 'Drop everything' },
+    { label: 'P1', name: 'Medium', c: '#FF8A00', on: '#1F1100', hint: 'This week' },
+    { label: 'P2', name: 'Low', c: '#6B4BFF', on: '#FFFFFF', hint: 'Soon' },
+    { label: 'P3', name: 'Lowest', c: '#12C79A', on: '#002A1F', hint: 'Someday' },
+    { label: '—', name: 'None', c: '#8E8D99', on: '#FFFFFF', hint: '' },
   ];
-  TYPES = ['Feature', 'Bug', 'Ops', 'Integration', 'Request', 'Infra', 'Idea'];
-  STATUS = [{ k: 'todo', label: 'To do' }, { k: 'doing', label: 'Doing' }, { k: 'done', label: 'Done' }];
+  STATUS = [
+    { k: 'Backlog', label: 'Backlog', c: '#2B5D6E' },
+    { k: 'In Progress', label: 'In Progress', c: '#0B4FA8' },
+    { k: 'Blocked', label: 'Blocked', c: '#B30000' },
+    { k: 'Parked', label: 'Parked', c: '#444444' },
+    { k: 'Closed', label: 'Closed', c: '#137A4B' },
+  ];
+  DOMAINS = ['Technology', 'Operations', 'Marketing', 'Business Analysis', 'Management', 'Logistics'];
+  MON = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+  DOW = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
   inputRef = React.createRef();
-  state = {
-    screen: (this.props.startScreen ?? 'Onboarding') === 'Onboarding' ? 'onboard' : 'today',
-    prev: 'today', dark: (this.props.theme ?? 'Light') === 'Dark', tasks: this.seed(), sel: 14,
-    sheet: false, draft: '', dPri: 2, dType: 'Feature', dDue: 'Today',
-    q: '', fPri: [], fType: null, fStatus: 'all', col: 'doing', obStep: 0, gh: false,
-    focusId: 14, secs: 1500, running: false, newSub: '', toast: null, nextId: 22,
-  };
+  ls(k) { try { return JSON.parse(localStorage.getItem(k) || 'null'); } catch (e) { return null; } }
+  sv(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} }
+  cfg = this.ls('bgdx2-cfg');
+  queue = this.ls('bgdx2-queue') || [];
+  busy = false;
+  idx = 0;
+  parseHash() {
+    const p = (location.hash || '').replace(/^#\/?/, '').split('/');
+    if (p[0] === 'new') return { screen: 'today', openNew: true };
+    if (['today', 'board', 'search', 'review', 'account'].includes(p[0])) return { screen: p[0] };
+    if (p[0] === 'detail' && p[1]) return { screen: 'detail', sel: decodeURIComponent(p[1]) };
+    return null;
+  }
+  hashFor(s) {
+    if (s.screen === 'onboard' || s.screen === 'login') return null;
+    if (s.screen === 'detail') return '#/detail/' + encodeURIComponent(s.sel || '');
+    if (s.screen === 'focus') return '#/detail/' + encodeURIComponent(s.focusId || '');
+    return '#/' + s.screen;
+  }
+  state = (() => {
+    const cfg = this.cfg, demo = this.ls('bgdx2-demo') === true, seen = this.ls('bgdx2-onb') === true, st = this.props.startScreen ?? 'Auto';
+    const mode = cfg && cfg.url ? 'sheet' : (demo || st === 'Today') ? 'demo' : 'none';
+    const tasks = mode === 'sheet' ? ((this.ls('bgdx2-cache') || {}).tasks || []) : mode === 'demo' ? (this.ls('bgdx2-demotasks') || this.seed()) : [];
+    let screen = st === 'Onboarding' ? 'onboard' : st === 'Login' ? 'login' : st === 'Today' ? 'today' : mode === 'none' ? (seen ? 'login' : 'onboard') : 'today';
+    const hr = this.parseHash(); let sel0 = null;
+    if (st === 'Auto' && mode !== 'none' && hr) { screen = hr.screen; sel0 = hr.sel || null; if (screen === 'detail' && !tasks.some(t => t.id === sel0)) { screen = 'today'; sel0 = null; } }
+    return {
+      screen, prev: 'today', mode, tasks, sel: sel0, focusId: null, dark: this.ls('bgdx2-dark') === true || (this.props.theme ?? 'Light') === 'Dark',
+      sheet: false, draft: '', dPri: 1, dType: 'Technology', dDue: 'Today', dOwner: null, ownerF: null,
+      q: '', fPri: [], fType: null, fStatus: 'all', col: 'In Progress', obStep: 0,
+      secs: 1500, running: false, newSub: '', toast: null,
+      syncSt: mode === 'sheet' ? 'syncing' : mode === 'demo' ? 'demo' : 'idle', pend: (this.ls('bgdx2-queue') || []).length, lastSync: (this.ls('bgdx2-cache') || {}).ts || 0, syncErr: '',
+      lUrl: '', lKey: '', lMe: 'Nafis', lErr: '', lBusy: false,
+    };
+  })();
   seed() {
+    const d = n => this.addD(n), mk = (id, title, domain, owner, status, pri, due, x) => ({ id, title, domain, owner, status, pri, due, costReq: false, cost: '', start: '', end: '', notes: '', subs: [], pr: '', branch: '', upd: 0, ...(x || {}) });
     return [
-      { id: 14, title: 'bKash checkout fails for orders above ৳10,000', type: 'Bug', pri: 0, status: 'doing', due: 'Today', pr: '#218', branch: 'fix/bkash-amount-cap', prOpen: true, shot: true, subs: [{ t: 'Reproduce on staging', d: true }, { t: 'Check gateway amount cap', d: true }, { t: 'Patch validation + add test', d: false }] },
-      { id: 21, title: '11.11 flash sale banner + countdown', type: 'Request', pri: 0, status: 'todo', due: 'Today', from: 'Rafi · CEO', subs: [{ t: 'Get final creative', d: true }, { t: 'Countdown component', d: false }, { t: 'Schedule go-live 11 Nov 00:00', d: false }] },
-      { id: 17, title: 'Inventory off by 3 units in Warehouse B', type: 'Ops', pri: 1, status: 'todo', due: 'Today', from: 'Nadia · Ops', subs: [] },
-      { id: 16, title: 'Product images slow on 3G', type: 'Bug', pri: 1, status: 'todo', due: 'Today', shot: true, subs: [{ t: 'Serve WebP via CDN', d: false }, { t: 'Lazy-load below fold', d: false }] },
-      { id: 19, title: 'Pathao courier live tracking', type: 'Integration', pri: 1, status: 'doing', due: 'Tomorrow', pr: '#214', branch: 'feat/pathao-tracking', prOpen: true, subs: [{ t: 'Sandbox API keys', d: true }, { t: 'Status webhook', d: true }, { t: 'Tracking page UI', d: false }, { t: 'SMS on dispatch', d: false }] },
-      { id: 12, title: 'Nightly Postgres backups to S3', type: 'Infra', pri: 2, status: 'todo', due: 'Mon', subs: [] },
-      { id: 11, title: 'Abandoned cart reminder emails', type: 'Feature', pri: 2, status: 'todo', due: 'Nov 12', subs: [] },
-      { id: 9, title: 'Upgrade Node 18 → 22', type: 'Infra', pri: 3, status: 'todo', due: 'Nov 20', subs: [] },
-      { id: 8, title: 'Shareable wishlists', type: 'Idea', pri: 3, status: 'todo', due: 'Someday', subs: [] },
-      { id: 7, title: 'Fix coupon stacking exploit', type: 'Bug', pri: 0, status: 'done', due: 'Today', pr: '#211', branch: 'fix/coupon-stack', subs: [] },
-      { id: 6, title: 'SSLCommerz refund webhook', type: 'Integration', pri: 1, status: 'done', due: 'Thu', pr: '#207', branch: 'feat/refund-hook', subs: [] },
-      { id: 5, title: 'Bangla invoice PDF', type: 'Feature', pri: 2, status: 'done', due: 'Wed', pr: '#203', branch: 'feat/invoice-bn', subs: [] },
-      { id: 4, title: 'Admin bulk price editor', type: 'Request', pri: 2, status: 'done', due: 'Tue', from: 'Nadia · Ops', pr: '#199', branch: 'feat/bulk-price', subs: [] },
+      mk('A-001', 'Branding & Design Guidelines (Logos)', 'Business Analysis', 'Sahadat', 'Closed', 0, d(-3), { end: d(-2) }),
+      mk('A-004', 'Spaceship to CloudFlare Migration', 'Technology', 'Sabbir', 'Closed', 1, d(-7), { end: d(0) }),
+      mk('A-006', 'Packaging - Measurement & Box (Design Finalization)', 'Operations', 'Sahadat', 'In Progress', 1, d(0), { start: d(-5), subs: [{ t: 'Final measurements', d: true }, { t: 'Box mockup', d: false }] }),
+      mk('A-008', 'Social Media Creations (Meta - FB, Instagram, Tik Tok)', 'Marketing', 'Nafis', 'In Progress', 2, d(1)),
+      mk('A-032', 'Website Launch Readiness (Architecture & System Infrastructure)', 'Technology', 'Nafis', 'In Progress', 0, d(0), { start: d(-6), pr: '#218', branch: 'feat/launch-readiness', subs: [{ t: 'Staging load test', d: true }, { t: 'Payment gateway test', d: true }, { t: 'Inventory sync check', d: false }, { t: 'Go-live checklist', d: false }] }),
+      mk('A-012', 'Domestic Two Business Sim Cards (Office & Customer Support)', 'Management', 'Hamim', 'Backlog', 2, d(2), { costReq: true, cost: 2000 }),
+      mk('A-002', 'Product SWOT Analysis', 'Business Analysis', 'C-Suite', 'Backlog', 3, d(-1)),
+      mk('A-018', 'Google My Business Profile (Finalizations)', 'Operations', 'Sabbir', 'Backlog', 2, d(3)),
+      mk('A-016', 'WhatsApp Business Profile (Sim Card Required)', 'Operations', 'Nafis', 'Blocked', 0, d(3), { notes: 'Waiting on sim card' }),
+      mk('A-026', 'Packaging - Order Placement (100 Unit)', 'Operations', 'C-Suite', 'Blocked', 1, d(0), { costReq: true }),
+      mk('A-014', 'Business Communication & Alerts Email (Postmark SMTP)', 'Operations', 'Sabbir', 'Parked', 4, ''),
     ];
   }
+  iso(d) { const z = n => String(n).padStart(2, '0'); return d.getFullYear() + '-' + z(d.getMonth() + 1) + '-' + z(d.getDate()); }
+  today() { return this.iso(new Date()); }
+  addD(n) { const d = new Date(); d.setDate(d.getDate() + n); return this.iso(d); }
+  parts(a) { const p = a.split('-').map(Number); return new Date(p[0], p[1] - 1, p[2]); }
+  dayDiff(a) { const d = this.parts(a), t = new Date(); return Math.round((Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()) - Date.UTC(t.getFullYear(), t.getMonth(), t.getDate())) / 864e5); }
+  fmt(a) { const d = this.parts(a); return this.MON[d.getMonth()] + ' ' + d.getDate(); }
+  dueTxt(t) {
+    if (!t.due) return 'No date';
+    if (t.status === 'Closed') return this.fmt(t.due);
+    const n = this.dayDiff(t.due);
+    return n < 0 ? 'Late ' + this.fmt(t.due) : n === 0 ? 'Today' : n === 1 ? 'Tomorrow' : n < 7 ? this.DOW[this.parts(t.due).getDay()] : this.fmt(t.due);
+  }
+  me() { return (this.cfg && this.cfg.me) || (this.state && this.state.lMe) || 'Nafis'; }
+  owners(tasks) {
+    const set = []; tasks.forEach(t => { if (t.owner && !set.includes(t.owner)) set.push(t.owner); });
+    const me = this.me(); set.sort((a, b) => (b === me) - (a === me) || a.localeCompare(b)); return set;
+  }
+  types(tasks) { const o = [...this.DOMAINS]; tasks.forEach(t => { if (t.domain && !o.includes(t.domain)) o.push(t.domain); }); return o; }
   componentDidMount() {
+    this.onKey = e => { const tg = (e.target.tagName || '').toLowerCase(); if (e.key === 'Escape') this.setState({ sheet: false }); else if ((e.key === 'n' || e.key === 'c') && !e.metaKey && !e.ctrlKey && tg !== 'input' && tg !== 'textarea' && ['today', 'board', 'search', 'review'].includes(this.state.screen)) { e.preventDefault(); this.openSheet(); } };
+    window.addEventListener('keydown', this.onKey);
+    this._pt = this.state.tasks; this._pd = this.state.dark;
+    this._pscr = this.state.screen; this._psel = this.state.sel;
+    document.title = 'BGDX';
+    try { const hf = this.hashFor(this.state); const hr0 = this.parseHash(); history.replaceState({ i: 0 }, '', hf !== null ? hf : location.pathname + location.search); if (hr0 && hr0.openNew && this.state.mode !== 'none') { history.replaceState({ i: 0 }, '', '#/today'); this.openSheet(); } } catch (e) {}
+    this.onPop = e => {
+      this.idx = (e.state && e.state.i) || 0;
+      if (this.state.mode === 'none') return;
+      const hr = this.parseHash(), screen = hr ? hr.screen : 'today', sel = hr && hr.sel ? hr.sel : this.state.sel;
+      if (screen !== this.state.screen || sel !== this.state.sel) { this.skipPush = true; this.setState({ screen, sel, sheet: false, running: false }); } else this.setState({ sheet: false });
+    };
+    window.addEventListener('popstate', this.onPop);
+    if (this.props.startScreen === undefined || this.props.startScreen === 'Auto') { if (this.state.screen === 'onboard') this.sv('bgdx2-onb', true); }
+    if ('serviceWorker' in navigator && location.protocol === 'https:' && !/\.dc\.html$/.test(location.pathname)) {
+      const had = !!navigator.serviceWorker.controller;
+      navigator.serviceWorker.addEventListener('controllerchange', () => { if (had && !this.swReloaded) { this.swReloaded = true; location.reload(); } });
+      navigator.serviceWorker.register('./sw.js').catch(() => {});
+    }
     this.onRz = () => this.forceUpdate(); window.addEventListener('resize', this.onRz);
+    this.onNet = () => { if (this.state.mode === 'sheet') { if (navigator.onLine) this.sync(); else this.setState({ syncSt: 'offline' }); } };
+    window.addEventListener('online', this.onNet); window.addEventListener('offline', this.onNet);
+    this.onVis = () => { if (!document.hidden && this.state.mode === 'sheet') this.sync(); };
+    document.addEventListener('visibilitychange', this.onVis);
     const sa = matchMedia('(display-mode: standalone)').matches || navigator.standalone;
     if (!sa && innerWidth < 600 && document.documentElement.requestFullscreen) {
       this.fs = () => { document.documentElement.requestFullscreen({ navigationUI: 'hide' }).catch(() => {}); removeEventListener('click', this.fs); };
       addEventListener('click', this.fs);
     }
-    try {
-      const s = JSON.parse(localStorage.getItem('bgdx-v1') || 'null');
-      if (s && s.tasks) this.setState({ tasks: s.tasks, dark: s.dark, nextId: s.nextId || 22 });
-    } catch (e) {}
-    this.timer = setInterval(() => {
-      if (this.state.running && this.state.secs > 0) this.setState(s => ({ secs: s.secs - 1 }));
-    }, 1000);
+    this.timer = setInterval(() => { if (this.state.running && this.state.secs > 0) this.setState(s => ({ secs: s.secs - 1 })); }, 1000);
+    this.poll = setInterval(() => { if (this.state.mode === 'sheet' && !document.hidden) this.sync(); else this.forceUpdate(); }, 30000);
+    if (this.state.mode === 'sheet') this.sync();
   }
-  componentWillUnmount() { window.removeEventListener('resize', this.onRz); clearInterval(this.timer); clearTimeout(this.tt); }
-  componentDidUpdate(pp, ps) {
-    const tc = document.querySelector('meta[name=theme-color]'); if (tc) tc.content = this.state.screen === 'focus' ? '#0B0B0E' : this.state.dark ? '#0B0B0E' : '#F4F3EF';
-    if (ps.tasks !== this.state.tasks || ps.dark !== this.state.dark)
-      localStorage.setItem('bgdx-v1', JSON.stringify({ tasks: this.state.tasks, dark: this.state.dark, nextId: this.state.nextId }));
+  componentWillUnmount() {
+    ['keydown'].forEach(() => window.removeEventListener('keydown', this.onKey));
+    window.removeEventListener('resize', this.onRz); window.removeEventListener('popstate', this.onPop); window.removeEventListener('online', this.onNet); window.removeEventListener('offline', this.onNet);
+    document.removeEventListener('visibilitychange', this.onVis);
+    clearInterval(this.timer); clearInterval(this.poll); clearTimeout(this.tt); clearTimeout(this.st);
+  }
+  componentDidUpdate() {
+    const s = this.state;
+    const tc = document.querySelector('meta[name=theme-color]'); if (tc) tc.content = s.screen === 'focus' || s.dark ? '#0B0B0E' : '#F4F3EF';
+    if (this._pscr !== s.screen || this._psel !== s.sel) {
+      this._pscr = s.screen; this._psel = s.sel;
+      if (this.skipPush) this.skipPush = false;
+      else { const hf = this.hashFor(s); if (hf !== null && hf !== location.hash) { try { this.idx++; history.pushState({ i: this.idx }, '', hf); } catch (e) {} } }
+    }
+    if (this._pt !== s.tasks) {
+      const first = this._pt === undefined; this._pt = s.tasks;
+      if (!first) {
+        if (s.mode === 'sheet') this.sv('bgdx2-cache', { tasks: s.tasks, ts: s.lastSync });
+        else if (s.mode === 'demo') this.sv('bgdx2-demotasks', s.tasks);
+      }
+    }
+    if (this._pd !== s.dark) { const first = this._pd === undefined; this._pd = s.dark; if (!first) this.sv('bgdx2-dark', s.dark); }
   }
   flash(msg) { clearTimeout(this.tt); this.setState({ toast: msg }); this.tt = setTimeout(() => this.setState({ toast: null }), 1800); }
-  upd(id, fn) { this.setState(s => ({ tasks: s.tasks.map(t => t.id === id ? fn(t) : t) })); }
-  go(screen) { this.setState({ screen, sheet: false }); }
-  open(id) { this.setState(s => ({ sel: id, prev: s.screen === 'detail' ? s.prev : s.screen, screen: 'detail' })); }
-  focus(id) { this.setState(s => ({ focusId: id, prev: s.screen === 'focus' ? s.prev : s.screen, screen: 'focus', secs: 1500, running: true })); }
-  toggleDone(id) {
-    const t = this.state.tasks.find(x => x.id === id);
-    const done = t.status !== 'done';
-    this.upd(id, x => ({ ...x, status: done ? 'done' : 'todo' }));
-    if (done) this.flash('Shipped · ' + this.key(t));
+  enqueue(task) {
+    this.queue = this.queue.filter(q => q.id !== task.id).concat({ id: task.id, task });
+    this.sv('bgdx2-queue', this.queue); this.setState({ pend: this.queue.length }); this.schedule(250);
   }
-  key(t) { return 'BX-' + String(t.id).padStart(3, '0'); }
+  schedule(ms) { clearTimeout(this.st); if (this.state.mode === 'sheet') this.st = setTimeout(() => this.sync(), ms); }
+  async sync() {
+    const cfg = this.cfg; if (!cfg || this.busy) return;
+    if (!navigator.onLine) { this.setState({ syncSt: 'offline' }); return; }
+    this.busy = true; this.setState({ syncSt: 'syncing' });
+    const sent = this.queue.slice(); let ok = false;
+    try {
+      const res = await fetch(cfg.url, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify({ key: cfg.key, action: 'sync', ops: sent.map(q => ({ op: 'upsert', task: q.task })) }) });
+      const j = await res.json();
+      if (!j.ok) { if (j.error === 'auth') { this.busy = false; this.signOut('The access key was rejected. Sign in again.'); return; } throw new Error(j.error || 'Server error'); }
+      this.queue = this.queue.filter(q => !sent.includes(q)); this.sv('bgdx2-queue', this.queue);
+      const pend = new Set(this.queue.map(q => q.id)), ids = new Set(j.tasks.map(t => t.id));
+      this.setState(s => {
+        const local = new Map(s.tasks.map(t => [t.id, t]));
+        const out = j.tasks.map(t => pend.has(t.id) ? (local.get(t.id) || t) : t);
+        s.tasks.forEach(t => { if (pend.has(t.id) && !ids.has(t.id)) out.push(t); });
+        return { tasks: out, syncSt: 'synced', lastSync: Date.now(), syncErr: '', pend: this.queue.length };
+      });
+      ok = true;
+    } catch (e) { this.setState({ syncSt: navigator.onLine ? 'error' : 'offline', syncErr: String(e.message || e) }); }
+    this.busy = false;
+    if (this.queue.length) this.schedule(ok ? 250 : 8000);
+  }
+  async doConnect() {
+    const { lUrl, lKey, lMe } = this.state, url = lUrl.trim();
+    if (!/^https:\/\/script\.google\.com\/.+\/exec/.test(url)) { this.setState({ lErr: 'That does not look like a web app URL. It should end in /exec.' }); return; }
+    if (!lKey.trim()) { this.setState({ lErr: 'Enter your access key.' }); return; }
+    this.setState({ lBusy: true, lErr: '' });
+    try {
+      const res = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify({ key: lKey.trim(), action: 'sync', ops: [] }) });
+      const j = await res.json();
+      if (!j.ok) throw new Error(j.error === 'auth' ? 'Wrong access key.' : (j.error || 'Server error'));
+      this.cfg = { url, key: lKey.trim(), me: lMe.trim() || 'Nafis' }; this.queue = [];
+      this.sv('bgdx2-cfg', this.cfg); this.sv('bgdx2-queue', []); this.sv('bgdx2-demo', false);
+      this.setState({ mode: 'sheet', tasks: j.tasks, screen: 'today', lBusy: false, lKey: '', syncSt: 'synced', lastSync: Date.now(), pend: 0, ownerF: null });
+    } catch (e) { this.setState({ lBusy: false, lErr: String(e.message || e).replace('Failed to fetch', 'Could not reach the URL. Check it and your connection.') }); }
+  }
+  signOut(msg) {
+    this.cfg = null; this.queue = []; this.sv('bgdx2-cfg', null); this.sv('bgdx2-queue', []); this.sv('bgdx2-cache', null); this.sv('bgdx2-demo', false);
+    this.setState({ mode: 'none', tasks: [], screen: 'login', lErr: msg || '', lKey: '', syncSt: 'idle', pend: 0, ownerF: null });
+  }
+  useDemo() { this.sv('bgdx2-demo', true); this.setState({ mode: 'demo', tasks: this.ls('bgdx2-demotasks') || this.seed(), screen: 'today', syncSt: 'demo' }); }
+  afterOb() { this.sv('bgdx2-onb', true); this.setState(s => ({ screen: s.mode === 'none' ? 'login' : 'today' })); }
+  upd(id, fn) {
+    let nt;
+    this.setState(s => ({ tasks: s.tasks.map(t => t.id === id ? (nt = { ...fn(t), upd: Date.now() }) : t) }), () => { if (nt && this.state.mode === 'sheet') this.enqueue(nt); });
+  }
+  setStatus(id, k) {
+    const td = this.today();
+    this.upd(id, x => ({ ...x, status: k, start: k === 'In Progress' && !x.start ? td : x.start, end: k === 'Closed' ? td : (x.status === 'Closed' ? '' : x.end) }));
+    if (k === 'Closed') this.flash('Closed · ' + id);
+  }
+  go(screen) { this.setState({ screen, sheet: false }); }
+  open(id) { this.setState(s => ({ sel: id, prev: ['detail', 'focus', 'account'].includes(s.screen) ? s.prev : s.screen, screen: 'detail' })); }
+  focus(id) { this.setState(s => ({ focusId: id, prev: s.screen === 'focus' ? s.prev : s.screen, screen: 'focus', secs: 1500, running: true })); }
+  toggleDone(id) { const t = this.state.tasks.find(x => x.id === id); this.setStatus(id, t.status === 'Closed' ? 'Backlog' : 'Closed'); }
   parse(d) {
-    let pri = this.state.dPri, type = this.state.dType, title = d;
-    const m = d.match(/!p?([0-3])\b/i);
-    if (m) { pri = +m[1]; title = title.replace(m[0], ''); }
-    const tm = d.match(/#(\w+)/);
-    if (tm) { const f = this.TYPES.find(x => x.toLowerCase().startsWith(tm[1].toLowerCase())); if (f) { type = f; title = title.replace(tm[0], ''); } }
-    return { title: title.replace(/\s+/g, ' ').trim(), pri, type };
+    const s = this.state; let pri = s.dPri, type = s.dType, owner = s.dOwner || this.me(), title = d;
+    const m = d.match(/!p?([0-3])\b/i); if (m) { pri = +m[1]; title = title.replace(m[0], ''); }
+    const tm = d.match(/#(\w+)/); if (tm) { const f = this.types(s.tasks).find(x => x.toLowerCase().startsWith(tm[1].toLowerCase())); if (f) { type = f; title = title.replace(tm[0], ''); } }
+    const om = d.match(/@(\w+)/); if (om) { const f = this.owners(s.tasks).find(x => x.toLowerCase().startsWith(om[1].toLowerCase())); if (f) { owner = f; title = title.replace(om[0], ''); } }
+    return { title: title.replace(/\s+/g, ' ').trim(), pri, type, owner };
   }
   addTask() {
-    const p = this.parse(this.state.draft);
-    if (!p.title) return;
-    const id = this.state.nextId;
-    this.setState(s => ({
-      tasks: [{ id, title: p.title, type: p.type, pri: p.pri, status: 'todo', due: s.dDue, subs: [] }, ...s.tasks],
-      nextId: id + 1, draft: '', sheet: false,
-    }));
-    this.flash('Added BX-' + String(id).padStart(3, '0'));
+    const p = this.parse(this.state.draft); if (!p.title) return;
+    const max = this.state.tasks.reduce((m, t) => Math.max(m, parseInt((t.id.match(/\d+/) || [0])[0], 10)), 0);
+    const id = 'A-' + String(max + 1).padStart(3, '0'), dd = this.state.dDue;
+    const task = { id, title: p.title, domain: p.type, owner: p.owner, status: 'Backlog', pri: p.pri, due: dd === 'No date' ? '' : this.addD(dd === 'Today' ? 0 : dd === 'Tomorrow' ? 1 : 7), costReq: false, cost: '', start: '', end: '', notes: '', subs: [], pr: '', branch: '', upd: Date.now() };
+    this.setState(s => ({ tasks: [task, ...s.tasks], draft: '', sheet: false, dOwner: null }), () => { if (this.state.mode === 'sheet') this.enqueue(task); });
+    this.flash('Added ' + id);
   }
   dec(t) {
-    const p = this.PRI[t.pri], done = t.status === 'done', sd = t.subs.filter(s => s.d).length, n = t.subs.length;
-    const si = this.STATUS.findIndex(s => s.k === t.status);
+    const p = this.PRI[t.pri] || this.PRI[4], st = this.STATUS.find(x => x.k === t.status) || this.STATUS[0], done = t.status === 'Closed';
+    const subs = t.subs || [], sd = subs.filter(x => x.d).length, n = subs.length;
+    const nextK = { 'Backlog': 'In Progress', 'In Progress': 'Closed', 'Blocked': 'In Progress', 'Parked': 'Backlog', 'Closed': 'Backlog' }[t.status] || 'Backlog';
+    const adv = { 'Backlog': '→ Start', 'In Progress': '→ Close', 'Blocked': 'Unblock', 'Parked': 'Unpark', 'Closed': 'Reopen' }[t.status] || 'Move';
     return {
-      ...t, key: this.key(t), c: p.c, on: p.on, pl: p.label, pn: p.name, done,
-      checkBg: done ? p.c : 'transparent', deco: done ? 'line-through' : 'none', op: done ? 0.5 : 1,
+      ...t, subs, key: t.id, due: this.dueTxt(t), dueISO: t.due, dueN: t.due ? this.dayDiff(t.due) : null,
+      dueLine: t.due ? 'Due ' + this.dueTxt(t) : 'No due date', type: t.domain, typeO: (t.domain || 'General') + (t.owner ? ' · ' + t.owner : ''),
+      c: p.c, on: p.on, pl: p.label, pn: '', done, checkBg: done ? p.c : 'transparent', deco: done ? 'line-through' : 'none', op: done ? 0.5 : 1,
       hasSubs: n > 0, subTxt: sd + '/' + n, subPct: n ? Math.round(sd / n * 100) + '%' : '0%',
-      hasPr: !!t.pr, noPr: !t.pr, hasFrom: !!t.from, fromInitial: (t.from || ' ')[0],
-      prState: t.status === 'done' ? 'Merged' : 'Open', prBg: t.status === 'done' ? '#6B4BFF' : '#12C79A', prFg: t.status === 'done' ? '#fff' : '#002A1F',
-      statusName: this.STATUS[si].label, shot: !!t.shot,
-      advLabel: si < 2 ? '→ ' + this.STATUS[si + 1].label : 'Reopen',
-      advance: e => { e.stopPropagation(); this.upd(t.id, x => ({ ...x, status: this.STATUS[(si + 1) % 3].k })); if (si === 1) this.flash('Shipped · ' + this.key(t)); },
+      hasPr: !!t.pr, noPr: !t.pr, hasFrom: false, from: '', fromInitial: '', branch: t.branch || '',
+      prState: done ? 'Merged' : 'Open', prBg: done ? '#6B4BFF' : '#12C79A', prFg: done ? '#fff' : '#002A1F',
+      statusName: st.label, shot: false, advLabel: adv,
+      costReqTxt: t.costReq ? 'YES' : 'NO', costVal: t.cost === '' || t.cost == null ? '' : String(t.cost),
+      startTxt: t.start ? this.fmt(t.start) : '—', endTxt: t.end ? this.fmt(t.end) : '—', notes: t.notes || '',
+      advance: e => { e.stopPropagation(); this.setStatus(t.id, nextK); },
       open: () => this.open(t.id),
       toggle: e => { e.stopPropagation(); this.toggleDone(t.id); },
       focus: e => { if (e) e.stopPropagation(); this.focus(t.id); },
     };
   }
   renderVals() {
-    const s = this.state, dark = s.dark, sig = this.props.signature ?? '#C8FF2E';
-    const sortP = (a, b) => a.pri - b.pri;
+    const s = this.state, dark = s.dark, sig = this.props.signature ?? '#C8FF2E', scr = s.screen;
+    const W = window.innerWidth, phoneMock = W >= 900 && this.props.desktopView === 'Phone mockup', desk = W >= 900 && !phoneMock, mob = W < 900;
     const T = s.tasks.map(t => this.dec(t));
+    const Tf = s.ownerF ? T.filter(t => t.owner === s.ownerF) : T;
+    const sortP = (a, b) => a.pri - b.pri;
+    const owners = this.owners(s.tasks), types = this.types(s.tasks), td = this.today();
     const vars = dark
       ? { '--bg': '#0B0B0E', '--surf': '#16161C', '--surf2': '#23232B', '--ink': '#F4F3F8', '--mute': '#8E8D99', '--line': 'rgba(255,255,255,.08)' }
       : { '--bg': '#F4F3EF', '--surf': '#FFFFFF', '--surf2': '#ECEAE4', '--ink': '#0F0F12', '--mute': '#6A6971', '--line': 'rgba(15,15,18,.09)' };
-    const themeVars = { ...vars, '--sig': sig, height: '100%', position: 'relative', display: 'flex', flexDirection: 'column', background: 'var(--bg)', color: 'var(--ink)', fontFamily: "'Geist',system-ui,sans-serif", overflow: 'hidden', transition: 'background .25s' };
     const bg = vars['--bg'];
-    const scr = s.screen;
-    const selT = T.find(t => t.id === s.sel) || T[0];
-    const focT = T.find(t => t.id === s.focusId) || T[0];
-    const frameBg = scr === 'focus' ? '#0B0B0E' : scr === 'detail' ? selT.c : bg;
-    const frameDark = scr === 'focus' ? true : scr === 'detail' ? selT.on === '#FFFFFF' : dark;
+    const themeVars = { ...vars, '--sig': sig, height: '100%', flex: 1, minHeight: 0, position: 'relative', display: 'flex', flexDirection: desk ? 'row' : 'column', background: 'var(--bg)', color: 'var(--ink)', fontFamily: "'Geist',system-ui,sans-serif", overflow: 'hidden', transition: 'background .25s' };
+    const selT = T.find(t => t.id === s.sel) || T[0] || this.dec({ id: '', title: '', domain: '', owner: '', status: 'Backlog', pri: 4, due: '', subs: [] });
+    const focT = T.find(t => t.id === s.focusId) || selT;
+    const fb = desk ? bg : scr === 'focus' ? '#0B0B0E' : scr === 'detail' ? selT.c : bg;
 
-    // today
-    const todayAll = T.filter(t => t.due === 'Today');
-    const todayOpen = todayAll.filter(t => !t.done).sort(sortP);
-    const todayDone = todayAll.filter(t => t.done);
-    const urgent = todayOpen.filter(t => t.pri === 0).length;
-    const now = T.filter(t => t.status === 'doing').sort(sortP)[0];
-    const segs = [...todayDone, ...todayOpen].map(t => ({ bg: t.done ? t.c : 'var(--surf2)' }));
+    const openT = Tf.filter(t => !t.done);
+    const dueNow = openT.filter(t => t.dueN !== null && t.dueN <= 0).sort((a, b) => sortP(a, b) || a.dueN - b.dueN);
+    const closedToday = Tf.filter(t => t.done && t.end === td);
+    const late = openT.filter(t => t.dueN !== null && t.dueN < 0).length;
+    const now = Tf.filter(t => t.status === 'In Progress').sort(sortP)[0];
+    const upcoming = openT.filter(t => t.dueN === null || t.dueN > 0).sort((a, b) => (a.dueN === null) - (b.dueN === null) || a.dueN - b.dueN || sortP(a, b)).slice(0, 5);
+    const segs = [...closedToday, ...dueNow].map(t => ({ bg: t.done ? t.c : 'var(--surf2)' }));
+    const dl = new Date(); const dateLabel = (this.DOW[dl.getDay()] + ' · ' + this.MON[dl.getMonth()] + ' ' + dl.getDate()).toUpperCase();
 
-    // board
-    const colItems = T.filter(t => t.status === s.col).sort(sortP);
-    const colTabs = this.STATUS.map(c => {
-      const a = s.col === c.k;
-      return { name: c.label, n: T.filter(t => t.status === c.k).length, bg: a ? 'var(--ink)' : 'var(--surf)', fg: a ? 'var(--bg)' : 'var(--ink)', onClick: () => this.setState({ col: c.k }) };
-    });
+    const colItems = Tf.filter(t => t.status === s.col).sort(sortP);
+    const colTabs = this.STATUS.map(c => { const a = s.col === c.k; return { name: c.label, n: Tf.filter(t => t.status === c.k).length, bg: a ? 'var(--ink)' : 'var(--surf)', fg: a ? 'var(--bg)' : 'var(--ink)', onClick: () => this.setState({ col: c.k }) }; });
 
-    // search
     const q = s.q.trim().toLowerCase();
-    const results = T.filter(t =>
-      (!q || (t.title + ' ' + t.key + ' ' + (t.pr || '') + ' ' + t.type).toLowerCase().includes(q)) &&
-      (!s.fPri.length || s.fPri.includes(t.pri)) && (!s.fType || t.type === s.fType) &&
-      (s.fStatus === 'all' || t.status === s.fStatus)).sort((a, b) => (a.done - b.done) || sortP(a, b));
-    const priBtn = (i, active, onClick) => ({ label: this.PRI[i].label, c: this.PRI[i].c, bg: active ? this.PRI[i].c : 'transparent', fg: active ? this.PRI[i].on : 'var(--ink)', onClick });
+    const results = Tf.filter(t => (!q || (t.title + ' ' + t.id + ' ' + (t.pr || '') + ' ' + (t.domain || '') + ' ' + (t.owner || '')).toLowerCase().includes(q)) && (!s.fPri.length || s.fPri.includes(t.pri)) && (!s.fType || t.domain === s.fType) && (s.fStatus === 'all' || t.status === s.fStatus)).sort((a, b) => (a.done - b.done) || sortP(a, b));
+    const priBtn = (i, active, onClick) => ({ label: this.PRI[i].name, c: this.PRI[i].c, bg: active ? this.PRI[i].c : 'transparent', fg: active ? this.PRI[i].on : 'var(--ink)', onClick });
     const chip = (label, active, onClick) => ({ label, bg: active ? 'var(--ink)' : 'var(--surf)', fg: active ? 'var(--bg)' : 'var(--ink)', onClick });
+    const ownerChips = [chip('All', !s.ownerF, () => this.setState({ ownerF: null })), ...owners.map(o => chip(o, s.ownerF === o, () => this.setState({ ownerF: s.ownerF === o ? null : o })))];
 
-    // review
-    const done = T.filter(t => t.done);
-    const wk = [2, 3, 1, 4, 2, 3, done.filter(t => t.due === 'Today').length];
-    const max = Math.max(...wk, 1);
-    const week = ['M', 'T', 'W', 'T', 'F', 'S', 'S'].map((l, i) => ({ l, h: i === 6 ? '6%' : Math.max(8, wk[i === 5 ? 6 : i] / max * 100) + '%', bg: i === 5 ? sig : 'rgba(127,127,140,.35)' }));
+    const closedAll = Tf.filter(t => t.done), dayISO = i => this.addD(-6 + i);
+    const wk = [0, 1, 2, 3, 4, 5, 6].map(i => closedAll.filter(t => t.end === dayISO(i)).length);
+    const this7 = wk.reduce((a, b) => a + b, 0), prev7 = closedAll.filter(t => t.end && this.dayDiff(t.end) <= -7 && this.dayDiff(t.end) >= -13).length;
+    const mx = Math.max(...wk, 1), delta = this7 - prev7;
+    const week = wk.map((n, i) => ({ l: this.DOW[this.parts(dayISO(i)).getDay()][0], h: Math.max(8, n / mx * 100) + '%', bg: i === 6 ? sig : 'rgba(127,127,140,.35)' }));
 
-    // sheet
-    const pv = this.parse(s.draft);
+    const pv = this.parse(s.draft), pvOwner = pv.owner;
     const mm = String(Math.floor(s.secs / 60)).padStart(2, '0') + ':' + String(s.secs % 60).padStart(2, '0');
     const nextSub = (focT.subs.find(x => !x.d) || {}).t || '';
-    const ob = s.obStep;
+    const ob = s.obStep, isSheet = s.mode === 'sheet';
     const navS = k => ({ bg: scr === k ? 'var(--ink)' : 'transparent', fg: scr === k ? 'var(--bg)' : 'var(--mute)' });
-    const jumpList = [['Onboarding', () => this.setState({ screen: 'onboard', obStep: 0, sheet: false })], ['Today', () => this.go('today')], ['Board', () => this.go('board')], ['Task detail', () => this.open(14)], ['Quick add', () => this.openSheet()], ['Search', () => this.go('search')], ['Weekly review', () => this.go('review')], ['Focus', () => this.focus(14)], [dark ? '☀ Light' : '☾ Dark', () => this.setState({ dark: !dark })]];
-    const curJump = s.sheet ? 'Quick add' : { onboard: 'Onboarding', today: 'Today', board: 'Board', detail: 'Task detail', search: 'Search', review: 'Weekly review', focus: 'Focus' }[scr];
+    const sideScr = desk && ['today', 'board', 'search', 'review', 'detail', 'account'].includes(scr);
+    const openN = Tf.filter(t => !t.done).length;
 
-    const mob = window.innerWidth < 600;
-    const frameStyle = mob
-      ? { width: '100%', height: '100dvh', position: 'relative', overflow: 'hidden', background: frameBg, paddingTop: 'env(safe-area-inset-top)', boxSizing: 'border-box', display: 'flex', flexDirection: 'column' }
-      : { width: 412, height: 892, borderRadius: 18, overflow: 'hidden', background: frameBg, border: '8px solid #1b1b1f', boxShadow: '0 30px 80px rgba(0,0,0,.25)', boxSizing: 'border-box', position: 'relative', display: 'flex', flexDirection: 'column' };
-    themeVars.flex = 1; themeVars.minHeight = 0;
+    const ago = s.lastSync ? Math.max(0, Math.round((Date.now() - s.lastSync) / 1000)) : 0;
+    const agoTxt = ago < 10 ? 'just now' : ago < 60 ? ago + 's ago' : ago < 3600 ? Math.round(ago / 60) + 'm ago' : Math.round(ago / 3600) + 'h ago';
+    const pendTxt = s.pend ? s.pend + ' change' + (s.pend > 1 ? 's' : '') + ' waiting' : 'All changes saved';
+    const syncSt = isSheet ? s.syncSt : s.mode === 'demo' ? 'demo' : 'idle';
+    const syncColor = { synced: '#12C79A', syncing: '#FF8A00', offline: '#8E8D99', error: '#FF2E63', demo: '#6B4BFF', idle: '#8E8D99' }[syncSt];
+    const syncShort = { synced: 'Synced', syncing: 'Syncing', offline: 'Offline' + (s.pend ? ' · ' + s.pend : ''), error: 'Retrying', demo: 'Demo', idle: '—' }[syncSt];
+    const syncText = { synced: 'Synced ' + agoTxt, syncing: 'Syncing…', offline: 'Offline · ' + pendTxt, error: 'Sync failed, retrying · ' + pendTxt, demo: 'Demo data · not saved to a sheet', idle: 'Not connected' }[syncSt];
+    let host = ''; try { host = this.cfg ? new URL(this.cfg.url).hostname + '/…' + this.cfg.url.slice(-12) : ''; } catch (e) {}
+
+    const sheetBox = desk
+      ? { position: 'absolute', left: '50%', marginLeft: -270, width: 540, top: '14%', background: 'var(--surf)', borderRadius: 28, padding: 20, display: 'flex', flexDirection: 'column', gap: 14, boxShadow: '0 30px 80px rgba(0,0,0,.35)', transition: 'transform .25s cubic-bezier(.2,.8,.2,1),opacity .2s', transform: s.sheet ? 'translateY(0)' : 'translateY(16px)', opacity: s.sheet ? 1 : 0 }
+      : { position: 'absolute', left: 0, right: 0, bottom: 0, background: 'var(--surf)', borderRadius: '28px 28px 0 0', padding: '10px 16px 20px', display: 'flex', flexDirection: 'column', gap: 14, transition: 'transform .3s cubic-bezier(.2,.8,.2,1)', transform: s.sheet ? 'translateY(0)' : 'translateY(105%)' };
+    const nv = (label, d, k, badge, onClick) => ({ label, d, badge, onClick, bg: scr === k ? 'var(--ink)' : 'transparent', fg: scr === k ? 'var(--bg)' : 'var(--ink)' });
+    const sideNav = [
+      nv('Today', 'M12 8a4 4 0 100 8 4 4 0 000-8zM12 2.5v2M12 19.5v2M2.5 12h2M19.5 12h2M5.3 5.3l1.4 1.4M17.3 17.3l1.4 1.4M5.3 18.7l1.4-1.4M17.3 6.7l1.4-1.4', 'today', String(dueNow.length), () => this.go('today')),
+      nv('Board', 'M4 5.5h4v13H4zM10 5.5h4v9h-4zM16 5.5h4v5h-4z', 'board', String(openN), () => this.go('board')),
+      nv('Review', 'M5 20v-8M12 20V5M19 20v-5', 'review', '', () => this.go('review')),
+      nv('Search', 'M11 4.5a6.5 6.5 0 100 13 6.5 6.5 0 000-13zM20 20l-4-4', 'search', '', () => this.go('search')),
+    ];
+    const maxW = desk ? ({ board: 1400, onboard: 480, focus: 520, login: 480 }[scr] || 760) : 0;
+    const frameStyle = (mob || desk)
+      ? { width: '100%', height: mob ? '100dvh' : '100vh', position: mob ? 'fixed' : 'relative', top: 0, left: 0, overflow: 'hidden', background: fb, paddingTop: 'env(safe-area-inset-top)', boxSizing: 'border-box', display: 'flex', flexDirection: 'column' }
+      : { width: 412, height: 892, borderRadius: 18, overflow: 'hidden', background: fb, border: '8px solid #1b1b1f', boxShadow: '0 30px 80px rgba(0,0,0,.25)', boxSizing: 'border-box', position: 'relative', display: 'flex', flexDirection: 'column' };
+    const jumpList = [['Onboarding', () => this.setState({ screen: 'onboard', obStep: 0, sheet: false })], ['Login', () => this.go('login')], ['Today', () => this.go('today')], ['Board', () => this.go('board')], ['Task detail', () => this.open((T[0] || {}).id)], ['Quick add', () => this.openSheet()], ['Search', () => this.go('search')], ['Weekly review', () => this.go('review')], ['Focus', () => this.focus((T[0] || {}).id)], ['Account', () => this.go('account')], [dark ? '☀ Light' : '☾ Dark', () => this.setState({ dark: !dark })]];
+    const curJump = s.sheet ? 'Quick add' : { onboard: 'Onboarding', login: 'Login', today: 'Today', board: 'Board', detail: 'Task detail', search: 'Search', review: 'Weekly review', focus: 'Focus', account: 'Account' }[scr];
+
     return {
-      frameStyle, jumpDisp: mob ? 'none' : 'flex', rootMinH: mob ? '100dvh' : '100vh', rootPad: mob ? '0' : '28px 16px 40px',
-      themeVars, frameBg, frameDark, dark, light: !dark,
+      themeVars, frameStyle, dark, light: !dark, version: '1.0.0',
       jumps: jumpList.map(([label, onClick]) => ({ label, onClick, bg: label === curJump ? '#0F0F12' : 'rgba(15,15,18,.07)', fg: label === curJump ? '#fff' : '#0F0F12' })),
-      isOnboard: scr === 'onboard', isToday: scr === 'today', isBoard: scr === 'board', isSearch: scr === 'search', isReview: scr === 'review', isDetail: scr === 'detail', isFocus: scr === 'focus',
-      showNav: ['today', 'board', 'search', 'review'].includes(scr),
+      jumpDisp: phoneMock ? 'flex' : 'none', rootMinH: phoneMock ? '100vh' : mob ? '100dvh' : '100vh', rootPad: phoneMock ? '28px 16px 40px' : '0',
+      isOnboard: scr === 'onboard', isLogin: scr === 'login', isAccount: scr === 'account', isToday: scr === 'today', isBoard: scr === 'board' && !desk, isBoardDesk: scr === 'board' && desk, isSearch: scr === 'search', isReview: scr === 'review', isDetail: scr === 'detail', isFocus: scr === 'focus',
+      showNav: ['today', 'board', 'search', 'review'].includes(scr) && !desk, showSide: sideScr, sideNav, themeIcon: dark ? 'M12 8a4 4 0 100 8 4 4 0 000-8zM12 2.5v2M12 19.5v2M2.5 12h2M19.5 12h2M5.3 5.3l1.4 1.4M17.3 17.3l1.4 1.4M5.3 18.7l1.4-1.4M17.3 6.7l1.4-1.4' : 'M20 14.5A8 8 0 019.5 4a8 8 0 1010.5 10.5z',
+      mainOuter: { flex: 1, minWidth: 0, minHeight: 0, display: 'flex', justifyContent: 'center' },
+      mainInner: { width: '100%', maxWidth: maxW || 'none', display: 'flex', flexDirection: 'column', minHeight: 0 },
+      sheetBox, handleDisp: desk ? 'none' : 'block',
+      detailBar: { position: 'absolute', left: sideScr ? 248 : 0, right: 0, bottom: 0, padding: '12px 16px 16px', display: 'flex', justifyContent: 'center', background: 'linear-gradient(transparent,var(--bg) 30%)' },
+      toastPos: desk ? 'position:absolute;left:50%;margin-left:-180px;width:360px;bottom:32px;box-sizing:border-box;' : 'position:absolute;left:24px;right:24px;bottom:calc(96px + env(safe-area-inset-bottom));',
       toggleDark: () => this.setState({ dark: !dark }),
-      goToday: () => this.go('today'), goBoard: () => this.go('board'), goReview: () => this.go('review'), goSearch: () => this.go('search'),
-      back: () => this.setState({ screen: s.prev || 'today', running: false }),
+      goToday: () => this.go('today'), goBoard: () => this.go('board'), goReview: () => this.go('review'), goSearch: () => this.go('search'), goAccount: () => this.setState(st => ({ prev: st.screen === 'account' ? st.prev : st.screen, screen: 'account' })),
+      back: () => { this.setState({ running: false }); if (this.idx > 0) history.back(); else this.setState({ screen: s.prev || 'today' }); },
       nav: { today: navS('today'), board: navS('board'), review: navS('review'), search: navS('search') },
+      // sync / account
+      syncColor, syncShort, syncText, meInitial: (this.me()[0] || 'B').toUpperCase(), isSheet,
+      acctTitle: isSheet ? 'Google Sheet connected' : s.mode === 'demo' ? 'Demo mode' : 'Not connected', acctHost: host || 'None', acctMe: this.me(), acctPend: String(s.pend),
+      syncNow: () => this.sync(), acctActionLabel: isSheet ? 'Sign out' : 'Connect a sheet', acctAction: () => isSheet ? this.signOut('') : this.go('login'),
+      // login
+      lUrl: s.lUrl, lKey: s.lKey, lMe: s.lMe, onLUrl: e => this.setState({ lUrl: e.target.value }), onLKey: e => this.setState({ lKey: e.target.value }), onLMe: e => this.setState({ lMe: e.target.value }),
+      hasLErr: !!s.lErr, lErr: s.lErr, lBtn: s.lBusy ? 'Connecting…' : 'Connect', doConnect: () => this.doConnect(), useDemo: () => this.useDemo(),
       // onboarding
       ob0: ob === 0, ob1: ob === 1, ob2: ob === 2, obCount: '0' + (ob + 1) + ' / 03',
       obDots: [0, 1, 2].map(i => ({ w: i === ob ? '22px' : '6px', bg: i === ob ? 'var(--ink)' : 'var(--line)' })),
-      obCta: ob === 2 ? 'Start' : 'Next', obNext: () => ob === 2 ? this.go('today') : this.setState({ obStep: ob + 1 }),
-      finishOb: () => this.go('today'), priLegend: this.PRI,
-      toggleGh: () => this.setState({ gh: !s.gh }), ghSub: s.gh ? 'bgdmart/storefront' : 'Not connected',
-      ghBtn: s.gh ? 'Connected' : 'Connect', ghBtnBg: s.gh ? '#12C79A' : 'var(--ink)', ghBtnFg: s.gh ? '#002A1F' : 'var(--bg)',
+      obCta: ob === 2 ? 'Start' : 'Next', obNext: () => ob === 2 ? this.afterOb() : this.setState({ obStep: ob + 1 }), finishOb: () => this.afterOb(), priLegend: this.PRI.slice(0, 4),
       // today
-      todayHeadline: todayOpen.length ? todayOpen.length + ' to ship' : 'All clear',
-      todaySub: todayDone.length + ' of ' + todayAll.length + ' done today' + (urgent ? ' · ' + urgent + ' urgent' : ''),
-      todaySegs: segs, todayLeftN: String(todayOpen.length), todayList: [...todayOpen, ...todayDone],
-      hasNow: !!now, now: now || T[0],
-      upcoming: T.filter(t => !t.done && t.due !== 'Today').sort(sortP).slice(0, 4),
+      dateLabel, todayHeadline: dueNow.length ? dueNow.length + ' to ship' : 'All clear',
+      todaySub: closedToday.length + ' closed today' + (late ? ' · ' + late + ' late' : ''), todaySegs: segs, todayLeftN: String(dueNow.length), todayList: [...dueNow, ...closedToday],
+      hasNow: !!now, now: now || T[0] || {}, upcoming, ownerChips,
       // board
-      colTabs, colItems, colEmpty: colItems.length === 0, openCount: T.filter(t => !t.done).length + ' open',
+      colTabs, colItems, colEmpty: colItems.length === 0, openCount: openN + ' open',
+      boardCols: this.STATUS.map(c => { const items = Tf.filter(t => t.status === c.k).sort(sortP); return { name: c.label, n: items.length, items, dot: c.c }; }),
       // search
       q: s.q, hasQ: !!s.q, onQ: e => this.setState({ q: e.target.value }), clearQ: () => this.setState({ q: '' }),
       priFilters: [0, 1, 2, 3].map(i => priBtn(i, s.fPri.includes(i), () => this.setState(st => ({ fPri: st.fPri.includes(i) ? st.fPri.filter(x => x !== i) : [...st.fPri, i] })))),
-      typeFilters: [chip('All types', !s.fType, () => this.setState({ fType: null })), ...this.TYPES.map(ty => chip(ty, s.fType === ty, () => this.setState({ fType: s.fType === ty ? null : ty })))],
-      statusFilters: [{ k: 'all', label: 'All' }, ...this.STATUS].map(o => ({ label: o.label, bg: s.fStatus === o.k ? 'var(--ink)' : 'transparent', fg: s.fStatus === o.k ? 'var(--bg)' : 'var(--ink)', onClick: () => this.setState({ fStatus: o.k }) })),
+      typeFilters: [chip('All types', !s.fType, () => this.setState({ fType: null })), ...types.map(ty => chip(ty, s.fType === ty, () => this.setState({ fType: s.fType === ty ? null : ty })))],
+      statusFilters: [{ k: 'all', label: 'All' }, ...this.STATUS].map(o => chip(o.label, s.fStatus === o.k, () => this.setState({ fStatus: o.k }))),
       results, resultsLabel: results.length + ' RESULT' + (results.length === 1 ? '' : 'S'),
       // review
-      doneCount: String(done.length + 6), week, focusTime: '6h 40m', bugsClosed: String(done.filter(t => t.type === 'Bug').length + 2),
-      priMix: this.PRI.map((p, i) => ({ label: p.label, c: p.c, n: done.filter(t => t.pri === i).length })).filter(p => p.n > 0),
-      doneList: done, carryN: String(T.filter(t => !t.done).length),
+      weekLabel: (this.fmt(dayISO(0)) + ' – ' + this.fmt(td)).toUpperCase(), weekDelta: (delta >= 0 ? '+' : '') + delta + ' vs prior wk', doneCount: String(this7), week,
+      blockedN: String(Tf.filter(t => t.status === 'Blocked').length), overdueN: String(late),
+      priMix: this.PRI.map((p, i) => ({ label: p.label, c: p.c, n: closedAll.filter(t => t.pri === i).length })).filter(p => p.n > 0),
+      doneList: closedAll.slice().sort((a, b) => (b.end || '').localeCompare(a.end || '')).slice(0, 8), carryN: String(openN),
       // detail
       d: selT,
-      statusOpts: this.STATUS.map(o => ({ label: o.label, bg: selT.status === o.k ? 'var(--ink)' : 'transparent', fg: selT.status === o.k ? 'var(--bg)' : 'var(--ink)', onClick: () => this.upd(selT.id, x => ({ ...x, status: o.k })) })),
+      statusOpts: this.STATUS.map(o => { const a = selT.status === o.k; return { label: o.label, bd: o.c, bg: a ? o.c : 'transparent', fg: a ? '#FFFFFF' : 'var(--ink)', onClick: () => this.setStatus(selT.id, o.k) }; }),
       priOpts: [0, 1, 2, 3].map(i => priBtn(i, selT.pri === i, () => this.upd(selT.id, x => ({ ...x, pri: i })))),
+      ownerOpts: owners.map(o => chip(o, selT.owner === o, () => this.upd(selT.id, x => ({ ...x, owner: o })))),
+      toggleCost: () => this.upd(selT.id, x => ({ ...x, costReq: !x.costReq })),
+      onCost: e => { const v = e.target.value; this.upd(selT.id, x => ({ ...x, cost: v === '' ? '' : Number(v) })); },
+      onNotes: e => { const v = e.target.value; this.upd(selT.id, x => ({ ...x, notes: v })); },
       subRows: selT.subs.map((x, i) => ({ ...x, bg: x.d ? selT.c : 'transparent', deco: x.d ? 'line-through' : 'none', op: x.d ? 0.5 : 1, toggle: () => this.upd(selT.id, t => ({ ...t, subs: t.subs.map((y, j) => j === i ? { ...y, d: !y.d } : y) })) })),
       newSub: s.newSub, onNewSub: e => this.setState({ newSub: e.target.value }),
-      onSubKey: e => { if (e.key === 'Enter' && s.newSub.trim()) { const v = s.newSub.trim(); this.upd(selT.id, t => ({ ...t, subs: [...t.subs, { t: v, d: false }] })); this.setState({ newSub: '' }); } },
-      linkPr: () => this.upd(selT.id, t => ({ ...t, pr: '#' + (219 + t.id % 7), branch: (t.type === 'Bug' ? 'fix/' : 'feat/') + t.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').slice(0, 24).replace(/-$/, '') })),
+      onSubKey: e => { if (e.key === 'Enter' && s.newSub.trim()) { const v = s.newSub.trim(); this.upd(selT.id, t => ({ ...t, subs: [...(t.subs || []), { t: v, d: false }] })); this.setState({ newSub: '' }); } },
+      linkPr: () => this.upd(selT.id, t => ({ ...t, pr: '#' + (219 + parseInt((t.id.match(/\d+/) || [0])[0], 10) % 7), branch: 'feat/' + t.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').slice(0, 24).replace(/-$/, '') })),
       // focus
-      f: { ...focT, nextSub, complete: () => { this.upd(focT.id, x => ({ ...x, status: 'done' })); this.setState({ screen: s.prev || 'today', running: false }); this.flash('Shipped · ' + focT.key); } },
+      f: { ...focT, nextSub, complete: () => { this.setStatus(focT.id, 'Closed'); this.setState({ screen: s.prev || 'today', running: false }); } },
       clock: mm, ringOff: String(753.98 * (1 - s.secs / 1500)), focusState: s.running ? 'DEEP WORK' : 'PAUSED',
       runLabel: s.running ? 'Pause' : 'Resume', toggleRun: () => this.setState({ running: !s.running }),
       // sheet
-      sheetPE: s.sheet ? 'auto' : 'none', sheetOp: s.sheet ? 1 : 0, sheetTf: s.sheet ? 'translateY(0)' : 'translateY(105%)',
+      sheetPE: s.sheet ? 'auto' : 'none', sheetOp: s.sheet ? 1 : 0,
       openSheet: () => this.openSheet(), closeSheet: () => this.setState({ sheet: false }),
       inputRef: this.inputRef, draft: s.draft, onDraft: e => this.setState({ draft: e.target.value }),
       onDraftKey: e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); this.addTask(); } },
-      pv: { c: this.PRI[pv.pri].c },
+      pv: { c: (this.PRI[pv.pri] || this.PRI[4]).c },
       sheetPri: [0, 1, 2, 3].map(i => priBtn(i, pv.pri === i, () => this.setState({ dPri: i, draft: s.draft.replace(/!p?[0-3]\b/i, '').trim() }))),
-      sheetTypes: this.TYPES.map(ty => ({ label: ty, bg: pv.type === ty ? 'var(--ink)' : 'var(--surf2)', fg: pv.type === ty ? 'var(--bg)' : 'var(--ink)', onClick: () => this.setState({ dType: ty, draft: s.draft.replace(/#\w+/, '').trim() }) })),
-      sheetDue: ['Today', 'Tomorrow', 'Mon'].map(l => ({ label: l, bg: s.dDue === l ? 'var(--ink)' : 'transparent', fg: s.dDue === l ? 'var(--bg)' : 'var(--ink)', onClick: () => this.setState({ dDue: l }) })),
+      sheetTypes: types.map(ty => ({ label: ty, bg: pv.type === ty ? 'var(--ink)' : 'var(--surf2)', fg: pv.type === ty ? 'var(--bg)' : 'var(--ink)', onClick: () => this.setState({ dType: ty, draft: s.draft.replace(/#\w+/, '').trim() }) })),
+      sheetOwners: (owners.length ? owners : [this.me()]).map(o => chip(o, pvOwner === o, () => this.setState({ dOwner: o, draft: s.draft.replace(/@\w+/, '').trim() }))),
+      sheetDue: ['Today', 'Tomorrow', '+1 week'].map(l => ({ label: l, bg: s.dDue === l ? 'var(--ink)' : 'transparent', fg: s.dDue === l ? 'var(--bg)' : 'var(--ink)', onClick: () => this.setState({ dDue: l }) })),
       addTask: () => this.addTask(), addOp: pv.title ? 1 : 0.35,
       hasToast: !!s.toast, toast: s.toast,
     };
@@ -689,7 +958,6 @@ class Component extends DCLogic {
     this.setState(s => ({ sheet: true, screen: ['today', 'board', 'search', 'review'].includes(s.screen) ? s.screen : 'today' }));
     setTimeout(() => this.inputRef.current && this.inputRef.current.focus(), 320);
   }
-}
-</script>
+}</script>
 </body>
 </html>
