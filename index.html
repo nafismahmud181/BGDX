@@ -157,12 +157,56 @@
         </div>
       </sc-if>
 
+      <!-- ADMIN HOME -->
+      <sc-if value="{{ isAdminDesk }}">
+        <div style="flex:1;min-height:0;display:flex;flex-direction:column;gap:18px;padding:28px 32px">
+          <div style="display:flex;align-items:flex-end;justify-content:space-between;gap:20px">
+            <div style="display:flex;flex-direction:column;gap:8px"><span style="font:500 13px 'Geist Mono',monospace;color:var(--mute)">{{ dateLabel }} · {{ weekNo }}</span><span style="font:600 38px/1 'Geist',sans-serif;letter-spacing:-.04em;color:var(--ink)">Who is doing what</span><span style="font:400 14px 'Geist',sans-serif;color:var(--mute)">{{ teamSummary }}</span></div>
+            <div style="display:flex;align-items:flex-end;gap:5px;height:52px"><sc-for list="{{ week }}" as="d" hint-placeholder-count="7"><div style="display:flex;flex-direction:column;align-items:center;gap:6px;height:100%;justify-content:flex-end"><div style="width:20px;border-radius:6px;height:{{ d.h }};background:{{ d.bg }}"></div><span style="font:500 10px 'Geist Mono',monospace;color:var(--mute)">{{ d.l }}</span></div></sc-for></div>
+            <button onClick="{{ showMine }}" style="height:48px;padding:0 20px;border-radius:24px;border:1px solid var(--line);background:transparent;color:var(--ink);font:600 14px 'Geist',sans-serif;cursor:pointer">My tasks</button>
+          </div>
+          <div style="display:grid;grid-template-columns:190px repeat(3,minmax(0,1fr));gap:10px;padding:0 2px"><span></span><sc-for list="{{ laneHeads }}" as="hd" hint-placeholder-count="3"><span style="font:600 12px 'Geist Mono',monospace;letter-spacing:.08em;color:var(--mute)">{{ hd }}</span></sc-for></div>
+          <div style="flex:1;min-height:0;overflow:auto;display:flex;flex-direction:column;gap:10px">
+            <sc-for list="{{ lanes }}" as="l" hint-placeholder-count="5">
+              <div style="flex:none;min-height:84px;display:grid;grid-template-columns:190px repeat(3,minmax(0,1fr));gap:10px;align-items:stretch">
+                <div style="background:var(--surf);border-radius:20px;padding:14px 16px;display:flex;flex-direction:column;justify-content:center;gap:10px"><div style="display:flex;align-items:center;gap:10px"><span style="width:32px;height:32px;border-radius:16px;flex:none;background:var(--surf2);color:var(--ink);display:flex;align-items:center;justify-content:center;font:600 11px 'Geist Mono',monospace">{{ l.ini }}</span><span style="font:600 15px 'Geist',sans-serif;color:var(--ink)">{{ l.name }}</span></div><div style="display:flex;gap:3px"><sc-for list="{{ l.meter }}" as="m" hint-placeholder-count="5"><div style="flex:1;height:5px;border-radius:3px;background:{{ m.bg }}"></div></sc-for></div><span style="font:500 11px 'Geist Mono',monospace;color:var(--mute)">{{ l.sub }}</span></div>
+                <sc-for list="{{ l.cols }}" as="c" hint-placeholder-count="3">
+                  <div style="background:var(--surf2);border-radius:20px;padding:8px;display:flex;flex-direction:column;gap:6px;justify-content:center;min-width:0">
+                    <sc-for list="{{ c.cards }}" as="k" hint-placeholder-count="1">
+                      <div onClick="{{ k.open }}" style="display:flex;gap:10px;align-items:center;padding:10px 12px;border-radius:14px;background:var(--surf);cursor:pointer"><span style="width:4px;align-self:stretch;border-radius:2px;flex:none;background:{{ k.c }}"></span><div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:4px"><span style="font:500 13px/1.25 'Geist',sans-serif;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ k.title }}</span><span style="font:500 11px 'Geist Mono',monospace;color:{{ k.tagC }}">{{ k.tag }}</span></div></div>
+                    </sc-for>
+                  </div>
+                </sc-for>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+      </sc-if>
+      <sc-if value="{{ isAdminMob }}">
+        <div style="flex:1;overflow:auto;padding:8px 16px 110px">
+          <div style="display:flex;align-items:center;justify-content:space-between;height:48px"><span style="font:700 17px 'Geist',sans-serif;letter-spacing:-.03em;color:var(--ink)">BGDX</span><div style="display:flex;gap:8px;align-items:center"><button onClick="{{ showMine }}" style="height:40px;padding:0 16px;border-radius:20px;border:1px solid var(--line);background:transparent;color:var(--ink);font:600 13px 'Geist',sans-serif;cursor:pointer">My tasks</button><button onClick="{{ goAccount }}" aria-label="Account" style="width:44px;height:44px;border-radius:22px;border:none;cursor:pointer;background:var(--ink);color:var(--bg);display:flex;align-items:center;justify-content:center;font:600 12px 'Geist Mono',monospace">{{ meInitial }}</button></div></div>
+          <div style="padding:14px 4px 18px;display:flex;flex-direction:column;gap:8px"><span style="font:500 13px 'Geist Mono',monospace;color:var(--mute)">{{ dateLabel }}</span><span style="font:600 34px/1 'Geist',sans-serif;letter-spacing:-.04em;color:var(--ink)">Who is doing what</span><span style="font:400 13px/1.4 'Geist',sans-serif;color:var(--mute)">{{ teamSummary }}</span></div>
+          <div style="display:flex;flex-direction:column;gap:10px">
+            <sc-for list="{{ lanes }}" as="l" hint-placeholder-count="5">
+              <div style="background:var(--surf);border-radius:22px;padding:16px;display:flex;flex-direction:column;gap:12px">
+                <div style="display:flex;align-items:center;gap:10px"><span style="width:32px;height:32px;border-radius:16px;flex:none;background:var(--surf2);color:var(--ink);display:flex;align-items:center;justify-content:center;font:600 11px 'Geist Mono',monospace">{{ l.ini }}</span><div style="flex:1;display:flex;flex-direction:column;gap:6px"><span style="font:600 15px 'Geist',sans-serif;color:var(--ink)">{{ l.name }}</span><div style="display:flex;gap:3px"><sc-for list="{{ l.meter }}" as="m" hint-placeholder-count="5"><div style="flex:1;height:4px;border-radius:2px;background:{{ m.bg }}"></div></sc-for></div></div><span style="font:500 11px 'Geist Mono',monospace;color:var(--mute)">{{ l.sub }}</span></div>
+                <sc-for list="{{ l.flat }}" as="k" hint-placeholder-count="2">
+                  <div onClick="{{ k.open }}" style="display:flex;gap:10px;align-items:center;padding:12px;border-radius:14px;background:var(--surf2);cursor:pointer"><span style="width:4px;align-self:stretch;border-radius:2px;flex:none;background:{{ k.c }}"></span><div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:4px"><span style="font:500 14px/1.25 'Geist',sans-serif;color:var(--ink)">{{ k.title }}</span><span style="font:500 11px 'Geist Mono',monospace;color:{{ k.tagC }}">{{ k.when }} · {{ k.tag }}</span></div></div>
+                </sc-for>
+                <sc-if value="{{ l.isFree }}"><span style="font:400 13px 'Geist',sans-serif;color:var(--mute)">Nothing open. Free to take work.</span></sc-if>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+      </sc-if>
+
       <!-- TODAY -->
       <sc-if value="{{ isToday }}">
         <div style="flex:1;overflow:auto;padding:8px 16px 110px">
           <div style="display:flex;align-items:center;justify-content:space-between;height:48px">
             <span style="font:700 17px 'Geist',sans-serif;letter-spacing:-.03em;color:var(--ink)">BGDX</span>
             <div style="display:flex;gap:8px;align-items:center">
+              <sc-if value="{{ isAdmin }}"><button onClick="{{ showTeam }}" style="height:40px;padding:0 16px;border-radius:20px;border:1px solid var(--line);background:transparent;color:var(--ink);font:600 13px 'Geist',sans-serif;cursor:pointer">Team</button></sc-if>
               <span style="display:flex;align-items:center;gap:6px;font:500 11px 'Geist Mono',monospace;color:var(--mute)"><span style="width:8px;height:8px;border-radius:4px;background:{{ syncColor }}"></span>{{ syncShort }}</span><button onClick="{{ toggleDark }}" aria-label="Toggle theme" style="width:44px;height:44px;border-radius:22px;border:none;background:var(--surf);color:var(--ink);cursor:pointer;display:flex;align-items:center;justify-content:center">
                 <sc-if value="{{ dark }}"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4"></circle><path d="M12 2.5v2M12 19.5v2M2.5 12h2M19.5 12h2M5.3 5.3l1.4 1.4M17.3 17.3l1.4 1.4M5.3 18.7l1.4-1.4M17.3 6.7l1.4-1.4"></path></svg></sc-if>
                 <sc-if value="{{ light }}"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M20 14.5A8 8 0 019.5 4a8 8 0 1010.5 10.5z"></path></svg></sc-if>
@@ -636,7 +680,7 @@ class Component extends DCLogic {
       q: '', fPri: [], fType: null, fStatus: 'all', col: 'In Progress', obStep: 0,
       secs: 1500, running: false, newSub: '', toast: null,
       syncSt: mode === 'sheet' ? 'syncing' : mode === 'demo' ? 'demo' : 'idle', pend: (this.ls('bgdx2-queue') || []).length, lastSync: (this.ls('bgdx2-cache') || {}).ts || 0, syncErr: '',
-      lUrl: '', lKey: '', lMe: '', lErr: '', lBusy: false, lStep: 1, lShowKey: false, lAdv: false, lPend: null, dOwners: null,
+      lUrl: '', lKey: '', lMe: '', lErr: '', lBusy: false, lStep: 1, lShowKey: false, lAdv: false, lPend: null, dOwners: null, adminView: 'team',
     };
   })();
   seed() {
@@ -745,6 +789,7 @@ class Component extends DCLogic {
       const res = await fetch(cfg.url, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify({ key: cfg.key, action: 'sync', ops: sent.map(q => ({ op: 'upsert', task: q.task })) }) });
       const j = await res.json();
       if (!j.ok) { if (j.error === 'auth') { this.busy = false; this.signOut('The access key was rejected. Sign in again.'); return; } throw new Error(j.error || 'Server error'); }
+      if (j.role && j.role !== cfg.role) { this.cfg = { ...cfg, role: j.role }; this.sv('bgdx2-cfg', this.cfg); }
       this.queue = this.queue.filter(q => !sent.includes(q)); this.sv('bgdx2-queue', this.queue);
       const pend = new Set(this.queue.map(q => q.id)), ids = new Set(j.tasks.map(t => t.id));
       this.setState(s => {
@@ -767,7 +812,7 @@ class Component extends DCLogic {
       const res = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify({ key, action: 'sync', ops: [] }) });
       const j = await res.json();
       if (!j.ok) throw new Error(j.error === 'auth' ? 'That key is not right. Check it with your admin.' : (j.error || 'Server error'));
-      const pend = { url, key, tasks: j.tasks, owners: j.owners || [] };
+      const pend = { url, key, tasks: j.tasks, owners: j.owners || [], role: j.role || 'member' };
       if (j.who && j.who !== 'Admin') { this.finishLogin(j.who, pend); return; }
       this.setState({ lBusy: false, lPend: pend, lStep: 2, lErr: '', lMe: '' });
     } catch (e) { this.setState({ lBusy: false, lErr: String(e.message || e).replace('Failed to fetch', 'Could not connect. Check your internet and try again.') }); }
@@ -776,7 +821,7 @@ class Component extends DCLogic {
     const me = (name || '').trim(), p = pend || this.state.lPend;
     if (!me) { this.setState({ lErr: 'Pick or type your name.' }); return; }
     if (!p) return;
-    this.cfg = { url: p.url, key: p.key, me }; this.queue = [];
+    this.cfg = { url: p.url, key: p.key, me, role: p.role || 'member' }; this.queue = [];
     this.sv('bgdx2-cfg', this.cfg); this.sv('bgdx2-queue', []);
     this.setState({ mode: 'sheet', tasks: p.tasks, dOwners: p.owners || [], screen: 'today', lBusy: false, lKey: '', lPend: null, lStep: 1, lErr: '', syncSt: 'synced', lastSync: Date.now(), pend: 0, ownerF: null });
   }
@@ -837,6 +882,7 @@ class Component extends DCLogic {
   renderVals() {
     const s = this.state, dark = s.dark, sig = this.props.signature ?? '#C8FF2E', scr = s.screen;
     const W = window.innerWidth, phoneMock = W >= 900 && this.props.desktopView === 'Phone mockup', desk = W >= 900 && !phoneMock, mob = W < 900;
+    const admin = !!(this.cfg && this.cfg.role === 'admin');
     const T = s.tasks.map(t => this.dec(t));
     const Tf = s.ownerF ? T.filter(t => t.owner === s.ownerF) : T;
     const sortP = (a, b) => a.pri - b.pri;
@@ -912,7 +958,7 @@ class Component extends DCLogic {
       themeVars, frameStyle, dark, light: !dark, version: '1.0.0',
       jumps: jumpList.map(([label, onClick]) => ({ label, onClick, bg: label === curJump ? '#0F0F12' : 'rgba(15,15,18,.07)', fg: label === curJump ? '#fff' : '#0F0F12' })),
       jumpDisp: phoneMock ? 'flex' : 'none', rootMinH: phoneMock ? '100vh' : mob ? '100dvh' : '100vh', rootPad: phoneMock ? '28px 16px 40px' : '0',
-      isOnboard: scr === 'onboard', isLogin: scr === 'login', isAccount: scr === 'account', isToday: scr === 'today', isBoard: scr === 'board' && !desk, isBoardDesk: scr === 'board' && desk, isSearch: scr === 'search', isReview: scr === 'review', isDetail: scr === 'detail', isFocus: scr === 'focus',
+      isOnboard: scr === 'onboard', isLogin: scr === 'login', isAccount: scr === 'account', isToday: scr === 'today' && !(admin && s.adminView === 'team'), isAdminDesk: scr === 'today' && admin && s.adminView === 'team' && desk, isAdminMob: scr === 'today' && admin && s.adminView === 'team' && !desk, isAdmin: admin, showTeam: () => this.setState({ adminView: 'team' }), showMine: () => this.setState({ adminView: 'mine' }), isBoard: scr === 'board' && !desk, isBoardDesk: scr === 'board' && desk, isSearch: scr === 'search', isReview: scr === 'review', isDetail: scr === 'detail', isFocus: scr === 'focus',
       showNav: ['today', 'board', 'search', 'review'].includes(scr) && !desk, showSide: sideScr, sideNav, themeIcon: dark ? 'M12 8a4 4 0 100 8 4 4 0 000-8zM12 2.5v2M12 19.5v2M2.5 12h2M19.5 12h2M5.3 5.3l1.4 1.4M17.3 17.3l1.4 1.4M5.3 18.7l1.4-1.4M17.3 6.7l1.4-1.4' : 'M20 14.5A8 8 0 019.5 4a8 8 0 1010.5 10.5z',
       mainOuter: { flex: 1, minWidth: 0, minHeight: 0, display: 'flex', justifyContent: 'center' },
       mainInner: { width: '100%', maxWidth: maxW || 'none', display: 'flex', flexDirection: 'column', minHeight: 0 },
@@ -942,6 +988,8 @@ class Component extends DCLogic {
       // today
       dateLabel, todayHeadline: dueNow.length ? dueNow.length + ' to ship' : 'All clear',
       todaySub: closedToday.length + ' closed today' + (late ? ' · ' + late + ' late' : ''), todaySegs: segs, todayLeftN: String(dueNow.length), todayList: [...dueNow, ...closedToday],
+      weekNo: 'WEEK ' + (() => { const d = new Date(), j = new Date(d.getFullYear(), 0, 1); return Math.ceil(((d - j) / 864e5 + j.getDay() + 1) / 7); })(),
+      laneHeads: ['TODAY', 'TOMORROW', 'LATER'], lanes: admin ? this.buildLanes(T, owners) : [], teamSummary: admin ? this.teamSummary(T, owners) : '',
       hasNow: !!now, now: now || T[0] || {}, upcoming, ownerChips,
       // board
       colTabs, colItems, colEmpty: colItems.length === 0, openCount: openN + ' open',
@@ -986,6 +1034,31 @@ class Component extends DCLogic {
       addTask: () => this.addTask(), addOp: pv.title ? 1 : 0.35,
       hasToast: !!s.toast, toast: s.toast,
     };
+  }
+  buildLanes(T, owners) {
+    const open = T.filter(t => !t.done);
+    const names = owners.slice(); open.forEach(t => { if (t.owner && !names.includes(t.owner)) names.push(t.owner); });
+    const tag = t => t.status === 'Blocked' ? ['BLOCKED · ' + t.pl, '#FF2E63'] : (t.dueN !== null && t.dueN < 0) ? ['OVERDUE ' + (-t.dueN) + 'D', '#FF2E63'] : [t.id + ' · ' + t.pl, t.pri === 0 ? '#FF2E63' : t.pri === 1 ? '#FF8A00' : 'var(--mute)'];
+    const bucket = t => (t.dueN !== null && t.dueN <= 0) || (t.dueN === null && t.status === 'In Progress') ? 0 : t.dueN === 1 ? 1 : 2;
+    return names.map(name => {
+      const mine = open.filter(t => t.owner === name).sort((a, b) => a.pri - b.pri), n = mine.length;
+      const card = (t, w) => { const [tg, tc] = tag(t); return { title: t.title, c: t.c, tag: tg, tagC: tc, when: w, open: t.open }; };
+      const cols = [0, 1, 2].map(i => ({ cards: mine.filter(t => bucket(t) === i).slice(0, 2).map(t => card(t)) }));
+      const extra = [0, 1, 2].map(i => mine.filter(t => bucket(t) === i).length - cols[i].cards.length);
+      extra.forEach((x, i) => { if (x > 0) cols[i].cards.push({ title: '+' + x + ' more', c: 'var(--line)', tag: 'IN THE BOARD', tagC: 'var(--mute)', open: () => this.setState({ screen: 'board', ownerF: name }) }); });
+      return { name, ini: (name[0] || '?').toUpperCase(), cols, isFree: n === 0, sub: n + ' open' + (n >= 4 ? ' · heavy' : n <= 1 ? ' · free' : ''),
+        meter: [0, 1, 2, 3, 4].map(i => ({ bg: i < n ? (n >= 4 ? '#FF2E63' : '#C8FF2E') : 'var(--surf2)' })),
+        flat: mine.map(t => card(t, ['Today', 'Tomorrow', 'Later'][bucket(t)])) };
+    }).sort((a, b) => (b.flat.length - a.flat.length) || a.name.localeCompare(b.name));
+  }
+  teamSummary(T, owners) {
+    const open = T.filter(t => !t.done), blocked = open.filter(t => t.status === 'Blocked').length, late = open.filter(t => t.dueN !== null && t.dueN < 0).length;
+    const cnt = {}; open.forEach(t => { if (t.owner) cnt[t.owner] = (cnt[t.owner] || 0) + 1; });
+    const top = Object.keys(cnt).sort((a, b) => cnt[b] - cnt[a])[0], free = owners.filter(o => !cnt[o]);
+    const parts = [open.length + ' open'];
+    if (blocked) parts.push(blocked + ' blocked'); if (late) parts.push(late + ' overdue');
+    if (top && cnt[top] >= 3) parts.push(top + ' is carrying the most'); if (free.length) parts.push(free.slice(0, 2).join(' and ') + (free.length > 2 ? ' +' + (free.length - 2) : '') + ' free');
+    return parts.join(' · ');
   }
   openSheet() {
     this.setState(s => ({ sheet: true, screen: ['today', 'board', 'search', 'review'].includes(s.screen) ? s.screen : 'today' }));

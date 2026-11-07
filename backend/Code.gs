@@ -11,15 +11,19 @@ var PRIORITIES = ['Highest', 'Medium', 'Low', 'Lowest'];
 var STATUSES = ['Backlog', 'In Progress', 'Blocked', 'Parked', 'Closed'];
 var REQUIRED = ['AID', 'Title', 'Domain', 'Ownership', 'Status', 'Priority', 'Cost Required?', 'Tentative Cost', 'Due Date', 'Actual Start', 'Actual End', 'Note', 'Checklist', 'PR', 'Branch', 'Updated', 'Updated By'];
 
+// Helper columns BGDX adds live far to the right (BB..BF) so they stay out of your way.
+var PLACED = { 'Checklist': 54, 'PR': 55, 'Branch': 56, 'Updated': 57, 'Updated By': 58 };
+
 function doGet() { return out({ ok: true, msg: 'BGDX API is running' }); }
 
 function doPost(e) {
   try {
     var body = JSON.parse(e.postData.contents);
-    var who = authUser(body.key);
-    if (!who) return out({ ok: false, error: 'auth' });
+    var user = authUser(body.key);
+    if (!user) return out({ ok: false, error: 'auth' });
+    var who = user.name, admin = user.role === 'admin';
     var owners = dataOwners();
-    if (who !== 'Admin') {
+    if (!admin) {
       var canon = owners.filter(function (n) { return n.toLowerCase() === who.toLowerCase(); })[0];
       if (!canon) return out({ ok: false, error: 'Your key name "' + who + '" is not in the Data owners list. Ask your admin.' });
       who = canon;
@@ -30,11 +34,11 @@ function doPost(e) {
       var sh = ss().getSheetByName(SHEET_NAME);
       if (!sh) return out({ ok: false, error: 'Sheet tab "' + SHEET_NAME + '" not found' });
       var cols = headerMap(sh);
-      (body.ops || []).forEach(function (op) { if (op.op === 'upsert' && op.task) upsert(sh, cols, op.task, who, owners); });
+      (body.ops || []).forEach(function (op) { if (op.op === 'upsert' && op.task) upsert(sh, cols, op.task, who, admin, owners); });
       SpreadsheetApp.flush();
       var all = readAll(sh, cols);
-      if (who !== 'Admin') all = all.filter(function (t) { return t.owner === who; });
-      return out({ ok: true, who: who, owners: owners, tasks: all });
+      if (!admin) all = all.filter(function (t) { return t.owner === who; });
+      return out({ ok: true, who: who, role: admin ? 'admin' : 'member', owners: owners, tasks: all });
     } finally { lock.releaseLock(); }
   } catch (err) { return out({ ok: false, error: String(err) }); }
 }
@@ -55,7 +59,9 @@ function headerMap(sh) {
   var head = sh.getRange(1, 1, 1, lastCol).getValues()[0].map(function (v) { return String(v).trim(); });
   REQUIRED.forEach(function (name) {
     if (head.map(function (h) { return h.toLowerCase(); }).indexOf(name.toLowerCase()) < 0) {
-      head.push(name); sh.getRange(1, head.length).setValue(name);
+      var at = PLACED[name];
+      if (at) { while (head.length < at) head.push(''); head[at - 1] = name; sh.getRange(1, at).setValue(name); }
+      else { head.push(name); sh.getRange(1, head.length).setValue(name); }
     }
   });
   var map = {};
@@ -93,20 +99,26 @@ function readAll(sh, cols) {
   return tasks;
 }
 
-// Keys: BGDX_KEYS = {"Rafi":"key1","Nadia":"key2"} (one per person). BGDX_KEY stays as the admin master key.
+// Keys: BGDX_KEY = master admin key. BGDX_KEYS = per-person keys, either
+//   {"Hamim":{"key":"long-random-1","access":"admin"},"Sabbir":{"key":"long-random-2","access":"member"}}
+// or the short form {"Sabbir":"long-random-2"} (member).
 function authUser(k) {
   if (!k) return null;
   var p = PropertiesService.getScriptProperties(), master = p.getProperty('BGDX_KEY');
-  if (master && k === master) return 'Admin';
+  if (master && k === master) return { name: 'Admin', role: 'admin' };
   try {
     var m = JSON.parse(p.getProperty('BGDX_KEYS') || '{}');
-    for (var n in m) if (m[n] && m[n] === k) return n;
+    for (var n in m) {
+      var v = m[n], key = typeof v === 'string' ? v : (v && v.key);
+      var role = typeof v === 'string' ? 'member' : (v && String(v.access).toLowerCase() === 'admin' ? 'admin' : 'member');
+      if (key && key === k) return { name: n, role: role };
+    }
   } catch (e) {}
   return null;
 }
 
-function upsert(sh, cols, t, who, owners) {
-  if (who !== 'Admin' && owners.indexOf(t.owner) < 0) t.owner = who;
+function upsert(sh, cols, t, who, admin, owners) {
+  if (!admin && owners.indexOf(t.owner) < 0) t.owner = who;
   var m = cols.map, last = sh.getLastRow(), row = -1, existing = null;
   if (last >= 2) {
     var ids = sh.getRange(2, m['aid'] + 1, last - 1, 1).getValues();
@@ -114,7 +126,7 @@ function upsert(sh, cols, t, who, owners) {
   }
   if (row > 0) {
     existing = sh.getRange(row, 1, 1, cols.width).getValues()[0];
-    if (who !== 'Admin' && String(existing[m['ownership']]).trim() !== who) return; // not your task
+    if (!admin && String(existing[m['ownership']]).trim() !== who) return; // not your task
     if ((Number(existing[m['updated']]) || 0) > (t.upd || 0)) return; // server copy is newer
   } else { row = Math.max(last, 1) + 1; existing = new Array(cols.width).fill(''); }
   function set(n, v) { existing[m[n.toLowerCase()]] = v; }
@@ -123,4 +135,21 @@ function upsert(sh, cols, t, who, owners) {
   set('Due Date', toDate(t.due)); set('Actual Start', toDate(t.start)); set('Actual End', toDate(t.end));
   set('Note', t.notes || ''); set('Checklist', t.subs && t.subs.length ? JSON.stringify(t.subs) : ''); set('PR', t.pr || ''); set('Branch', t.branch || ''); set('Updated', t.upd || Date.now()); set('Updated By', who || '');
   sh.getRange(row, 1, 1, cols.width).setValues([existing]);
+}
+
+// ONE-TIME: select "moveHelperColumns" in the editor and press Run.
+// Moves Checklist, PR, Branch, Updated, Updated By to BB..BF (headers + data). Safe to run twice.
+function moveHelperColumns() {
+  var sh = ss().getSheetByName(SHEET_NAME);
+  var lastCol = sh.getLastColumn(), lastRow = Math.max(sh.getLastRow(), 1);
+  var head = sh.getRange(1, 1, 1, lastCol).getValues()[0].map(function (v) { return String(v).trim().toLowerCase(); });
+  var moved = [];
+  Object.keys(PLACED).forEach(function (name) {
+    var from = head.indexOf(name.toLowerCase()) + 1, to = PLACED[name];
+    if (from > 0 && from !== to) {
+      sh.getRange(1, from, lastRow, 1).moveTo(sh.getRange(1, to));
+      moved.push(name + ': ' + from + ' -> ' + to);
+    }
+  });
+  Logger.log(moved.length ? 'Moved ' + moved.join(', ') : 'Nothing to move');
 }
