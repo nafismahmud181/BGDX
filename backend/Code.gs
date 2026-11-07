@@ -43,7 +43,7 @@ function doPost(e) {
       SpreadsheetApp.flush();
       var all = readAll(sh, cols);
       if (!admin) all = all.filter(function (t) { return t.owner === who; });
-      result = { ok: true, who: who, role: admin ? 'admin' : 'member', owners: owners, tasks: all };
+      result = { ok: true, who: who, role: admin ? 'admin' : 'member', owners: owners, tasks: all, inbox: readInbox(actor, admin) };
     } finally { lock.releaseLock(); }
     if (events.length) { try { notifyEvents(events, actor); } catch (err) { console.error('push failed: ' + err); } }
     return out(result);
@@ -211,7 +211,7 @@ function collectEvents(events, before, t, m, actor) {
   var oldStatus = before ? String(before[m['status']]).trim() : '';
   var mine = t.owner && t.owner.toLowerCase() !== me;
   if (mine && (!before || oldOwner !== t.owner)) {
-    events.push({ to: t.owner, title: 'New task for you', body: label + (actor ? '\nAssigned by ' + actor : ''), url: '#/detail/' + t.id, tag: t.id });
+    events.push({ kind: 'assign', to: t.owner, title: 'New task for you', body: label + (actor ? '\nAssigned by ' + actor : ''), url: '#/detail/' + t.id, tag: t.id });
   } else if (mine && before) {
     var ch = [];
     if (oldStatus !== t.status) ch.push('Status: ' + oldStatus + ' → ' + t.status);
@@ -219,14 +219,15 @@ function collectEvents(events, before, t, m, actor) {
     if (oldPri !== newPri) ch.push('Priority: ' + (oldPri || 'None') + ' → ' + (newPri || 'None'));
     var oldDue = iso(before[m['due date']]);
     if (oldDue !== (t.due || '')) ch.push('Due: ' + (oldDue || 'none') + ' → ' + (t.due || 'none'));
-    if (ch.length) events.push({ to: t.owner, title: actor + ' updated your task', body: label + '\n' + ch.join(' · '), url: '#/detail/' + t.id, tag: t.id });
+    if (ch.length) events.push({ kind: 'change', to: t.owner, title: actor + ' updated your task', body: label + '\n' + ch.join(' · '), url: '#/detail/' + t.id, tag: t.id });
   }
   if (t.status === 'Blocked' && oldStatus !== 'Blocked') {
-    events.push({ toAdmins: true, title: 'Task blocked', body: label + '\nOwner: ' + (t.owner || '—') + (actor ? ' · by ' + actor : ''), url: '#/detail/' + t.id, tag: t.id + '-blocked' });
+    events.push({ kind: 'blocked', toAdmins: true, title: 'Task blocked', body: label + '\nOwner: ' + (t.owner || '—') + (actor ? ' · by ' + actor : ''), url: '#/detail/' + t.id, tag: t.id + '-blocked' });
   }
 }
 
 function notifyEvents(events, actor) {
+  logInbox(events, actor);
   var devices = readDevices(), me = String(actor || '').toLowerCase(), msgs = [];
   events.forEach(function (e) {
     devices.forEach(function (d) {
@@ -239,11 +240,12 @@ function notifyEvents(events, actor) {
 }
 
 // Daily: each person gets one message with what is due today and what is overdue.
+// Everyone gets it in the in-app inbox; people with a registered device also get a push.
 function dailyReminder() {
   var sh = ss().getSheetByName(SHEET_NAME); if (!sh) return;
-  var tasks = readAll(sh, headerMap(sh)), devices = readDevices(), msgs = [];
+  var tasks = readAll(sh, headerMap(sh)), devices = readDevices(), msgs = [], events = [];
   var today = Utilities.formatDate(new Date(), ss().getSpreadsheetTimeZone(), 'yyyy-MM-dd');
-  var names = {}; devices.forEach(function (d) { names[d.name.toLowerCase()] = d.name; });
+  var names = {}; tasks.forEach(function (t) { if (t.owner) names[t.owner.toLowerCase()] = t.owner; });
   Object.keys(names).forEach(function (key) {
     var open = tasks.filter(function (t) { return t.owner.toLowerCase() === key && t.status !== 'Closed' && t.due && t.due <= today; });
     if (!open.length) return;
@@ -251,9 +253,54 @@ function dailyReminder() {
     var head = [dueToday ? dueToday + ' due today' : '', late ? late + ' overdue' : ''].filter(String).join(' · ');
     open.sort(function (a, b) { return a.pri - b.pri || a.due.localeCompare(b.due); });
     var body = open.slice(0, 3).map(function (t) { return t.id + ' ' + t.title; }).join('\n') + (open.length > 3 ? '\n+' + (open.length - 3) + ' more' : '');
+    events.push({ kind: 'daily', to: names[key], title: head, body: body, url: '#/today' });
     devices.forEach(function (d) { if (d.name.toLowerCase() === key) msgs.push({ device: d, title: head, body: body, url: '#/today', tag: 'daily' }); });
   });
+  logInbox(events, '');
   sendPush(msgs);
+}
+
+// ── In-app inbox: every notification is also logged to a hidden "Inbox" tab ──
+var INBOX_SHEET = 'Inbox';
+var INBOX_HEAD = ['Time', 'To', 'Kind', 'Title', 'Body', 'Link', 'By'];
+var INBOX_KEEP = 2000; // rows; older ones are trimmed
+
+function inboxSheet() {
+  var book = ss(), sh = book.getSheetByName(INBOX_SHEET);
+  if (!sh) {
+    sh = book.insertSheet(INBOX_SHEET);
+    sh.getRange(1, 1, 1, INBOX_HEAD.length).setValues([INBOX_HEAD]);
+    sh.hideSheet();
+  }
+  return sh;
+}
+
+function logInbox(events, actor) {
+  if (!events.length) return;
+  var now = Date.now();
+  var rows = events.map(function (e) { return [now, e.toAdmins ? '@admins' : e.to, e.kind || '', e.title, e.body, e.url || '', actor || '']; });
+  var lock = LockService.getScriptLock();
+  lock.waitLock(20000);
+  try {
+    var sh = inboxSheet();
+    sh.getRange(sh.getLastRow() + 1, 1, rows.length, INBOX_HEAD.length).setValues(rows);
+    var extra = sh.getLastRow() - 1 - INBOX_KEEP;
+    if (extra > 200) sh.deleteRows(2, extra);
+  } finally { lock.releaseLock(); }
+}
+
+// Latest 50 notifications for this person (admins also see "@admins" ones not caused by themselves).
+function readInbox(name, admin) {
+  var sh = ss().getSheetByName(INBOX_SHEET); if (!sh) return [];
+  var last = sh.getLastRow(); if (last < 2) return [];
+  var from = Math.max(2, last - 499), me = String(name || '').toLowerCase(), outList = [];
+  var rows = sh.getRange(from, 1, last - from + 1, INBOX_HEAD.length).getValues();
+  for (var i = rows.length - 1; i >= 0 && outList.length < 50; i--) {
+    var r = rows[i], to = String(r[1]).toLowerCase();
+    var mine = to === me || (admin && to === '@admins' && String(r[6]).toLowerCase() !== me);
+    if (mine) outList.push({ ts: Number(r[0]) || 0, kind: String(r[2]), title: String(r[3]), body: String(r[4]), url: String(r[5]) });
+  }
+  return outList;
 }
 
 // ONE-TIME: select "setupDailyReminder" in the editor and press Run. Safe to run again.

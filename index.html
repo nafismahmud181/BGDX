@@ -160,6 +160,33 @@
         </div>
       </sc-if>
 
+      <!-- NOTIFICATIONS -->
+      <sc-if value="{{ isInbox }}">
+        <div style="flex:1;overflow:auto;padding:8px 16px 110px;display:flex;flex-direction:column;gap:8px">
+          <div style="display:flex;align-items:center;gap:6px;height:52px">
+            <button onClick="{{ back }}" aria-label="Back" style="width:44px;height:44px;margin-left:-6px;border:none;background:none;color:var(--ink);cursor:pointer;display:flex;align-items:center;justify-content:center"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"></path></svg></button>
+            <span style="flex:1;font:600 26px 'Geist',sans-serif;letter-spacing:-.03em;color:var(--ink)">Notifications</span>
+            <span style="font:500 12px 'Geist Mono',monospace;color:var(--mute);white-space:nowrap">{{ inboxSub }}</span>
+          </div>
+          <sc-for list="{{ inboxItems }}" as="n" hint-placeholder-count="5">
+            <div onClick="{{ n.open }}" style="flex:none;display:flex;gap:14px;align-items:flex-start;padding:16px;border-radius:20px;cursor:pointer;background:{{ n.bg }};border:1px solid {{ n.bd }}">
+              <span style="width:38px;height:38px;border-radius:19px;flex:none;background:{{ n.c }};color:#fff;display:flex;align-items:center;justify-content:center"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="{{ n.d }}"></path></svg></span>
+              <div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:4px">
+                <div style="display:flex;align-items:baseline;gap:8px"><span style="flex:1;font:600 15px/1.3 'Geist',sans-serif;color:var(--ink)">{{ n.title }}</span><span style="font:500 11px 'Geist Mono',monospace;color:var(--mute);white-space:nowrap">{{ n.when }}</span><span style="display:{{ n.dot }};width:8px;height:8px;border-radius:4px;background:#FF2E63;flex:none;align-self:center"></span></div>
+                <span style="font:400 14px/1.4 'Geist',sans-serif;color:var(--mute);white-space:pre-line;overflow-wrap:anywhere">{{ n.body }}</span>
+              </div>
+            </div>
+          </sc-for>
+          <sc-if value="{{ inboxEmpty }}">
+            <div style="padding:80px 24px;display:flex;flex-direction:column;align-items:center;gap:14px;text-align:center">
+              <span style="width:56px;height:56px;border-radius:28px;background:var(--surf);color:var(--mute);display:flex;align-items:center;justify-content:center"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 16V11a6 6 0 1112 0v5l1.5 2h-15zM10 20.5a2 2 0 004 0"></path></svg></span>
+              <span style="font:600 17px 'Geist',sans-serif;color:var(--ink)">No notifications yet</span>
+              <span style="font:400 14px/1.45 'Geist',sans-serif;color:var(--mute);max-width:280px">Task assignments, changes to your tasks and the morning reminder will show up here.</span>
+            </div>
+          </sc-if>
+        </div>
+      </sc-if>
+
       <!-- ADMIN HOME -->
       <sc-if value="{{ isAdminDesk }}">
         <div style="flex:1;min-height:0;display:flex;flex-direction:column;gap:18px;padding:28px 32px">
@@ -187,7 +214,7 @@
       </sc-if>
       <sc-if value="{{ isAdminMob }}">
         <div style="flex:1;overflow:auto;padding:8px 16px 110px">
-          <div style="display:flex;align-items:center;justify-content:space-between;height:48px"><span style="font:700 17px 'Geist',sans-serif;letter-spacing:-.03em;color:var(--ink)">BGDX</span><div style="display:flex;gap:8px;align-items:center"><button onClick="{{ showMine }}" style="height:40px;padding:0 16px;border-radius:20px;border:1px solid var(--line);background:transparent;color:var(--ink);font:600 13px 'Geist',sans-serif;cursor:pointer">My tasks</button><button onClick="{{ goAccount }}" aria-label="Account" style="width:44px;height:44px;border-radius:22px;border:none;cursor:pointer;background:var(--ink);color:var(--bg);display:flex;align-items:center;justify-content:center;font:600 12px 'Geist Mono',monospace">{{ meInitial }}</button></div></div>
+          <div style="display:flex;align-items:center;justify-content:space-between;height:48px"><span style="font:700 17px 'Geist',sans-serif;letter-spacing:-.03em;color:var(--ink)">BGDX</span><div style="display:flex;gap:8px;align-items:center"><button onClick="{{ showMine }}" style="height:40px;padding:0 16px;border-radius:20px;border:1px solid var(--line);background:transparent;color:var(--ink);font:600 13px 'Geist',sans-serif;cursor:pointer">My tasks</button><button onClick="{{ goInbox }}" aria-label="Notifications" style="position:relative;width:44px;height:44px;border-radius:22px;border:none;background:var(--surf);color:var(--ink);cursor:pointer;display:flex;align-items:center;justify-content:center;flex:none"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 16V11a6 6 0 1112 0v5l1.5 2h-15zM10 20.5a2 2 0 004 0"></path></svg><sc-if value="{{ hasUnread }}"><span style="position:absolute;top:-2px;right:-2px;min-width:18px;height:18px;padding:0 5px;box-sizing:border-box;border-radius:9px;background:#FF2E63;color:#fff;font:600 10px/18px 'Geist Mono',monospace;text-align:center;border:2px solid var(--bg)">{{ inboxBadge }}</span></sc-if></button><button onClick="{{ goAccount }}" aria-label="Account" style="width:44px;height:44px;border-radius:22px;border:none;cursor:pointer;background:var(--ink);color:var(--bg);display:flex;align-items:center;justify-content:center;font:600 12px 'Geist Mono',monospace">{{ meInitial }}</button></div></div>
           <div style="padding:14px 4px 18px;display:flex;flex-direction:column;gap:8px"><span style="font:500 13px 'Geist Mono',monospace;color:var(--mute)">{{ dateLabel }}</span><span style="font:600 34px/1 'Geist',sans-serif;letter-spacing:-.04em;color:var(--ink)">Who is doing what</span><span style="font:400 13px/1.4 'Geist',sans-serif;color:var(--mute)">{{ teamSummary }}</span></div>
           <div style="display:flex;flex-direction:column;gap:10px">
             <sc-for list="{{ lanes }}" as="l" hint-placeholder-count="5">
@@ -214,6 +241,7 @@
                 <sc-if value="{{ dark }}"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4"></circle><path d="M12 2.5v2M12 19.5v2M2.5 12h2M19.5 12h2M5.3 5.3l1.4 1.4M17.3 17.3l1.4 1.4M5.3 18.7l1.4-1.4M17.3 6.7l1.4-1.4"></path></svg></sc-if>
                 <sc-if value="{{ light }}"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M20 14.5A8 8 0 019.5 4a8 8 0 1010.5 10.5z"></path></svg></sc-if>
               </button>
+              <button onClick="{{ goInbox }}" aria-label="Notifications" style="position:relative;width:44px;height:44px;border-radius:22px;border:none;background:var(--surf);color:var(--ink);cursor:pointer;display:flex;align-items:center;justify-content:center;flex:none"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 16V11a6 6 0 1112 0v5l1.5 2h-15zM10 20.5a2 2 0 004 0"></path></svg><sc-if value="{{ hasUnread }}"><span style="position:absolute;top:-2px;right:-2px;min-width:18px;height:18px;padding:0 5px;box-sizing:border-box;border-radius:9px;background:#FF2E63;color:#fff;font:600 10px/18px 'Geist Mono',monospace;text-align:center;border:2px solid var(--bg)">{{ inboxBadge }}</span></sc-if></button>
               <button onClick="{{ goAccount }}" aria-label="Account" style="width:44px;height:44px;border-radius:22px;border:none;cursor:pointer;background:var(--ink);color:var(--bg);display:flex;align-items:center;justify-content:center;font:600 12px 'Geist Mono',monospace">{{ meInitial }}</button>
             </div>
           </div>
@@ -660,7 +688,7 @@ class Component extends DCLogic {
   parseHash() {
     const p = (location.hash || '').replace(/^#\/?/, '').split('/');
     if (p[0] === 'new') return { screen: 'today', openNew: true };
-    if (['today', 'board', 'search', 'review', 'account'].includes(p[0])) return { screen: p[0] };
+    if (['today', 'board', 'search', 'review', 'account', 'inbox'].includes(p[0])) return { screen: p[0] };
     if (p[0] === 'detail' && p[1]) return { screen: 'detail', sel: decodeURIComponent(p[1]) };
     return null;
   }
@@ -684,7 +712,7 @@ class Component extends DCLogic {
       q: '', fPri: [], fType: null, fStatus: 'all', col: 'In Progress', obStep: 0,
       secs: 1500, running: false, newSub: '', toast: null,
       syncSt: mode === 'sheet' ? 'syncing' : 'idle', pend: (this.ls('bgdx2-queue') || []).length, lastSync: (this.ls('bgdx2-cache') || {}).ts || 0, syncErr: '',
-      lUrl: '', lKey: '', lMe: '', lErr: '', lBusy: false, lStep: 1, lShowKey: false, lAdv: false, lPend: null, dOwners: null, adminView: 'team', pushOn: !!(this.ls('bgdx2-push') || {}).on, pushBusy: false, pushErr: '',
+      lUrl: '', lKey: '', lMe: '', lErr: '', lBusy: false, lStep: 1, lShowKey: false, lAdv: false, lPend: null, dOwners: null, adminView: 'team', pushOn: !!(this.ls('bgdx2-push') || {}).on, pushBusy: false, pushErr: '', inbox: this.ls('bgdx2-inbox') || [], seen: this.ls('bgdx2-seen') || 0, inboxMark: this.ls('bgdx2-seen') || 0,
     };
   })();
   iso(d) { const z = n => String(n).padStart(2, '0'); return d.getFullYear() + '-' + z(d.getMonth() + 1) + '-' + z(d.getDate()); }
@@ -795,6 +823,20 @@ class Component extends DCLogic {
       }
     } catch (e) {}
   }
+  // ── Notifications page ──
+  goInbox() { this.setState(st => ({ prev: ['inbox', 'account'].includes(st.screen) ? st.prev : st.screen, screen: 'inbox', sheet: false, inboxMark: st.seen })); }
+  markInboxSeen() { const top = (this.state.inbox[0] || {}).ts || 0; if (top > this.state.seen) { this.sv('bgdx2-seen', top); this.setState({ seen: top }); } }
+  openNote(n) {
+    const m = /^#\/detail\/(.+)$/.exec(n.url || '');
+    if (m) { const id = decodeURIComponent(m[1]); if (this.state.tasks.some(t => t.id === id)) this.open(id); else this.flash('That task is no longer on your list'); }
+    else if (n.url === '#/today') this.go('today');
+  }
+  agoShort(ts) {
+    const d = Math.max(0, Date.now() - ts) / 1000;
+    if (d < 60) return 'now'; if (d < 3600) return Math.floor(d / 60) + 'm'; if (d < 86400) return Math.floor(d / 3600) + 'h';
+    if (d < 6 * 86400) return this.DOW[new Date(ts).getDay()];
+    const x = new Date(ts); return this.MON[x.getMonth()] + ' ' + x.getDate();
+  }
   componentDidMount() {
     this.onKey = e => { const tg = (e.target.tagName || '').toLowerCase(); if (e.key === 'Escape') this.setState({ sheet: false }); else if ((e.key === 'n' || e.key === 'c') && !e.metaKey && !e.ctrlKey && tg !== 'input' && tg !== 'textarea' && ['today', 'board', 'search', 'review'].includes(this.state.screen)) { e.preventDefault(); this.openSheet(); } };
     window.addEventListener('keydown', this.onKey);
@@ -838,6 +880,7 @@ class Component extends DCLogic {
   }
   componentDidUpdate() {
     const s = this.state;
+    if (s.screen === 'inbox') this.markInboxSeen();
     const tc = document.querySelector('meta[name=theme-color]'); if (tc) tc.content = s.screen === 'focus' || s.dark ? '#0B0B0E' : '#F4F3EF';
     if (this._pscr !== s.screen || this._psel !== s.sel) {
       this._pscr = s.screen; this._psel = s.sel;
@@ -869,12 +912,13 @@ class Component extends DCLogic {
       if (!j.ok) { if (j.error === 'auth') { this.busy = false; this.signOut('The access key was rejected. Sign in again.'); return; } throw new Error(j.error || 'Server error'); }
       if (j.role && j.role !== cfg.role) { this.cfg = { ...cfg, role: j.role }; this.sv('bgdx2-cfg', this.cfg); }
       this.queue = this.queue.filter(q => !sent.includes(q)); this.sv('bgdx2-queue', this.queue);
+      if (j.inbox) this.sv('bgdx2-inbox', j.inbox);
       const pend = new Set(this.queue.map(q => q.id)), ids = new Set(j.tasks.map(t => t.id));
       this.setState(s => {
         const local = new Map(s.tasks.map(t => [t.id, t]));
         const out = j.tasks.map(t => pend.has(t.id) ? (local.get(t.id) || t) : t);
         s.tasks.forEach(t => { if (pend.has(t.id) && !ids.has(t.id)) out.push(t); });
-        return { tasks: out, dOwners: j.owners || s.dOwners, syncSt: 'synced', lastSync: Date.now(), syncErr: '', pend: this.queue.length };
+        return { tasks: out, inbox: j.inbox || s.inbox, dOwners: j.owners || s.dOwners, syncSt: 'synced', lastSync: Date.now(), syncErr: '', pend: this.queue.length };
       });
       ok = true;
     } catch (e) { this.setState({ syncSt: navigator.onLine ? 'error' : 'offline', syncErr: String(e.message || e) }); }
@@ -890,7 +934,7 @@ class Component extends DCLogic {
       const res = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify({ key, action: 'sync', ops: [] }) });
       const j = await res.json();
       if (!j.ok) throw new Error(j.error === 'auth' ? 'That key is not right. Check it with your admin.' : (j.error || 'Server error'));
-      const pend = { url, key, tasks: j.tasks, owners: j.owners || [], role: j.role || 'member' };
+      const pend = { url, key, tasks: j.tasks, inbox: j.inbox || [], owners: j.owners || [], role: j.role || 'member' };
       if (j.who && j.who !== 'Admin') { this.finishLogin(j.who, pend); return; }
       this.setState({ lBusy: false, lPend: pend, lStep: 2, lErr: '', lMe: '' });
     } catch (e) { this.setState({ lBusy: false, lErr: String(e.message || e).replace('Failed to fetch', 'Could not connect. Check your internet and try again.') }); }
@@ -901,11 +945,12 @@ class Component extends DCLogic {
     if (!p) return;
     this.cfg = { url: p.url, key: p.key, me, role: p.role || 'member' }; this.queue = [];
     this.sv('bgdx2-cfg', this.cfg); this.sv('bgdx2-queue', []);
-    this.setState({ mode: 'sheet', tasks: p.tasks, dOwners: p.owners || [], screen: 'today', lBusy: false, lKey: '', lPend: null, lStep: 1, lErr: '', syncSt: 'synced', lastSync: Date.now(), pend: 0, ownerF: null });
+    const seen0 = Date.now(); this.sv('bgdx2-inbox', p.inbox || []); this.sv('bgdx2-seen', seen0);
+    this.setState({ mode: 'sheet', tasks: p.tasks, inbox: p.inbox || [], seen: seen0, dOwners: p.owners || [], screen: 'today', lBusy: false, lKey: '', lPend: null, lStep: 1, lErr: '', syncSt: 'synced', lastSync: Date.now(), pend: 0, ownerF: null });
   }
   signOut(msg) {
     const pp = this.ls('bgdx2-push'); if (pp && pp.token && this.cfg) this.api({ action: 'unregister', token: pp.token }).catch(() => {});
-    this.sv('bgdx2-push', null); this.setState({ pushOn: false, pushErr: '' });
+    this.sv('bgdx2-push', null); this.sv('bgdx2-inbox', null); this.sv('bgdx2-seen', null); this.setState({ pushOn: false, pushErr: '', inbox: [], seen: 0 });
     this.cfg = null; this.queue = []; this.sv('bgdx2-cfg', null); this.sv('bgdx2-queue', []); this.sv('bgdx2-cache', null);
     this.setState({ mode: 'none', tasks: [], screen: 'login', lErr: msg || '', lKey: '', lStep: 1, lPend: null, syncSt: 'idle', pend: 0, ownerF: null });
   }
@@ -1005,7 +1050,8 @@ class Component extends DCLogic {
     const nextSub = (focT.subs.find(x => !x.d) || {}).t || '';
     const ob = s.obStep, isSheet = s.mode === 'sheet';
     const navS = k => ({ bg: scr === k ? 'var(--ink)' : 'transparent', fg: scr === k ? 'var(--bg)' : 'var(--mute)' });
-    const sideScr = desk && ['today', 'board', 'search', 'review', 'detail', 'account'].includes(scr);
+    const sideScr = desk && ['today', 'board', 'search', 'review', 'detail', 'account', 'inbox'].includes(scr);
+    const unread = s.inbox.filter(n => n.ts > s.seen).length;
     const openN = Tf.filter(t => !t.done).length;
 
     const ago = s.lastSync ? Math.max(0, Math.round((Date.now() - s.lastSync) / 1000)) : 0;
@@ -1026,6 +1072,7 @@ class Component extends DCLogic {
       nv('Board', 'M4 5.5h4v13H4zM10 5.5h4v9h-4zM16 5.5h4v5h-4z', 'board', String(openN), () => this.go('board')),
       nv('Review', 'M5 20v-8M12 20V5M19 20v-5', 'review', '', () => this.go('review')),
       nv('Search', 'M11 4.5a6.5 6.5 0 100 13 6.5 6.5 0 000-13zM20 20l-4-4', 'search', '', () => this.go('search')),
+      nv('Notifications', 'M6 16V11a6 6 0 1112 0v5l1.5 2h-15zM10 20.5a2 2 0 004 0', 'inbox', unread ? String(unread) : '', () => this.goInbox()),
     ];
     const maxW = desk ? ({ onboard: 480, focus: 520, login: 480 }[scr] || 1800) : 0;
     const frameStyle = (mob || desk)
@@ -1053,6 +1100,13 @@ class Component extends DCLogic {
       syncColor, syncShort, syncText, meInitial: (this.me()[0] || 'B').toUpperCase(), isSheet,
       acctTitle: isSheet ? 'Google Sheet connected' : 'Not connected', acctHost: host || 'None', acctMe: this.me(), acctPend: String(s.pend),
       syncNow: () => this.sync(),
+      isInbox: scr === 'inbox', goInbox: () => this.goInbox(), hasUnread: unread > 0, inboxBadge: unread > 9 ? '9+' : String(unread),
+      inboxSub: (() => { const n = scr === 'inbox' ? s.inbox.filter(x => x.ts > s.inboxMark).length : unread; return s.inbox.length ? (n ? n + ' new' : 'All caught up') : ''; })(), inboxEmpty: s.inbox.length === 0,
+      inboxItems: s.inbox.map(n => {
+        const k = { assign: ['#6B4BFF', 'M15 19v-1a4 4 0 00-4-4H7a4 4 0 00-4 4v1M9 10a3 3 0 100-6 3 3 0 000 6zM19 8v6M22 11h-6'], change: ['#0B4FA8', 'M4 20h4L19 9l-4-4L4 16v4zM13.5 6.5l4 4'], blocked: ['#FF2E63', 'M12 3l9.5 17h-19L12 3zM12 10v4M12 17.5v.01'], daily: ['#FF8A00', 'M12 7v5l3 2M12 3a9 9 0 100 18 9 9 0 000-18z'] }[n.kind] || ['#8E8D99', 'M6 16V11a6 6 0 1112 0v5l1.5 2h-15zM10 20.5a2 2 0 004 0'];
+        const isNew = n.ts > s.inboxMark;
+        return { title: n.title, body: n.body, when: this.agoShort(n.ts), c: k[0], d: k[1], bg: isNew ? 'var(--surf)' : 'transparent', bd: isNew ? 'transparent' : 'var(--line)', dot: isNew ? 'block' : 'none', open: () => this.openNote(n) };
+      }),
       ...(() => {
         const k = this.pushKind(), can = k === 'web' || k === 'native';
         const hint = s.pushErr || (k === 'ios-install' ? 'On iPhone, notifications need the Home Screen app: tap Share, then Add to Home Screen, and open BGDX from there.' : k === 'noconfig' ? 'Push is not set up yet (firebase-config.js is empty).' : k === 'none' ? 'This browser does not support notifications.' : s.pushOn ? 'You get alerts for tasks assigned to you, changes to your tasks, a morning due reminder' + (this.cfg && this.cfg.role === 'admin' ? ', and blocked tasks.' : '.') : '');
