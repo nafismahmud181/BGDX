@@ -102,16 +102,36 @@
       </sc-if>
 
       <sc-if value="{{ isLogin }}">
-        <div style="flex:1;overflow:auto;padding:32px 24px;display:flex;flex-direction:column;gap:20px;justify-content:center">
+        <div style="flex:1;overflow:auto;padding:32px 24px;display:flex;flex-direction:column;gap:22px;justify-content:center">
+          <div style="display:flex;align-items:flex-end;gap:5px;height:44px"><span style="width:14px;height:100%;border-radius:5px;background:#FF2E63"></span><span style="width:14px;height:75%;border-radius:5px;background:#FF8A00"></span><span style="width:14px;height:52%;border-radius:5px;background:#6B4BFF"></span><span style="width:14px;height:30%;border-radius:5px;background:var(--sig)"></span></div>
           <div style="font:700 56px/0.9 'Geist',sans-serif;letter-spacing:-.05em;color:var(--ink)">BGDX</div>
-          <div style="font:600 26px/1.1 'Geist',sans-serif;letter-spacing:-.025em;color:var(--ink)">Connect your sheet</div>
-          <div style="font:400 15px/1.45 'Geist',sans-serif;color:var(--mute);text-wrap:pretty">Paste the web app URL and the access key from your Apps Script setup.</div>
-          <div style="display:flex;flex-direction:column;gap:8px"><span style="font:500 11px 'Geist Mono',monospace;letter-spacing:.08em;color:var(--mute);padding:0 4px">WEB APP URL</span><input value="{{ lUrl }}" onChange="{{ onLUrl }}" placeholder="https://script.google.com/macros/s/…/exec" autocomplete="off" autocapitalize="off" style="width:100%;box-sizing:border-box;height:52px;border-radius:18px;border:1px solid var(--line);background:var(--surf);padding:0 16px;font:400 16px 'Geist',sans-serif;color:var(--ink);outline:none"></div>
-          <div style="display:flex;flex-direction:column;gap:8px"><span style="font:500 11px 'Geist Mono',monospace;letter-spacing:.08em;color:var(--mute);padding:0 4px">ACCESS KEY</span><input type="password" value="{{ lKey }}" onChange="{{ onLKey }}" placeholder="Your secret key" autocomplete="off" style="width:100%;box-sizing:border-box;height:52px;border-radius:18px;border:1px solid var(--line);background:var(--surf);padding:0 16px;font:400 16px 'Geist',sans-serif;color:var(--ink);outline:none"></div>
-          <div style="display:flex;flex-direction:column;gap:8px"><span style="font:500 11px 'Geist Mono',monospace;letter-spacing:.08em;color:var(--mute);padding:0 4px">YOUR NAME IN THE SHEET</span><input value="{{ lMe }}" onChange="{{ onLMe }}" placeholder="Owner name, e.g. Nafis" style="width:100%;box-sizing:border-box;height:52px;border-radius:18px;border:1px solid var(--line);background:var(--surf);padding:0 16px;font:400 16px 'Geist',sans-serif;color:var(--ink);outline:none"></div>
-          <sc-if value="{{ hasLErr }}"><div style="padding:14px 16px;border-radius:16px;background:#FF2E63;color:#fff;font:500 14px/1.4 'Geist',sans-serif">{{ lErr }}</div></sc-if>
-          <button onClick="{{ doConnect }}" style="height:56px;border:none;border-radius:28px;background:var(--sig);color:#0F0F12;font:600 16px 'Geist',sans-serif;cursor:pointer">{{ lBtn }}</button>
-          
+          <div style="display:flex;flex-direction:column;gap:8px">
+            <div style="font:600 26px/1.1 'Geist',sans-serif;letter-spacing:-.025em;color:var(--ink);text-wrap:pretty">{{ lTitle }}</div>
+            <div style="font:400 15px/1.45 'Geist',sans-serif;color:var(--mute);text-wrap:pretty">{{ lSub }}</div>
+          </div>
+          <sc-if value="{{ lStep1 }}">
+            <div style="display:flex;flex-direction:column;gap:20px">
+              <div style="display:flex;flex-direction:column;gap:8px"><span style="font:500 11px 'Geist Mono',monospace;letter-spacing:.08em;color:var(--mute);padding:0 4px">ACCESS KEY</span>
+                <div style="position:relative"><input type="{{ lKeyType }}" value="{{ lKey }}" onChange="{{ onLKey }}" onKeyDown="{{ onKeyEnter }}" placeholder="Paste the key from your admin" autocomplete="off" autocapitalize="off" style="width:100%;box-sizing:border-box;height:56px;border-radius:18px;border:1px solid var(--line);background:var(--surf);padding:0 16px;font:400 17px 'Geist',sans-serif;color:var(--ink);outline:none;padding-right:76px"><button onClick="{{ toggleKey }}" style="position:absolute;right:6px;top:8px;height:40px;padding:0 14px;border:none;background:none;color:var(--mute);font:600 13px 'Geist',sans-serif;cursor:pointer">{{ lShowTxt }}</button></div>
+              </div>
+              <sc-if value="{{ lAdv }}"><div style="display:flex;flex-direction:column;gap:8px"><span style="font:500 11px 'Geist Mono',monospace;letter-spacing:.08em;color:var(--mute);padding:0 4px">WEB APP URL (OPTIONAL)</span><input value="{{ lUrl }}" onChange="{{ onLUrl }}" placeholder="Leave empty to use the default" autocomplete="off" autocapitalize="off" style="width:100%;box-sizing:border-box;height:56px;border-radius:18px;border:1px solid var(--line);background:var(--surf);padding:0 16px;font:400 17px 'Geist',sans-serif;color:var(--ink);outline:none"></div></sc-if>
+              <sc-if value="{{ hasLErr }}"><div style="padding:14px 16px;border-radius:16px;background:#FF2E63;color:#fff;font:500 14px/1.4 'Geist',sans-serif">{{ lErr }}</div></sc-if>
+              <button onClick="{{ doConnect }}" style="height:58px;border:none;border-radius:29px;background:var(--sig);color:#0F0F12;font:600 17px 'Geist',sans-serif;cursor:pointer">{{ lBtn }}</button>
+              <button onClick="{{ toggleAdv }}" style="height:40px;border:none;background:none;color:var(--mute);font:500 13px 'Geist',sans-serif;cursor:pointer">{{ lAdvTxt }}</button>
+            </div>
+          </sc-if>
+          <sc-if value="{{ lStep2 }}">
+            <div style="display:flex;flex-direction:column;gap:10px">
+              <sc-for list="{{ lWho }}" as="o" hint-placeholder-count="4">
+                <button onClick="{{ o.onClick }}" style="height:58px;border:none;border-radius:18px;background:var(--surf);color:var(--ink);font:600 17px 'Geist',sans-serif;cursor:pointer;display:flex;align-items:center;gap:14px;padding:0 16px;text-align:left"><span style="width:34px;height:34px;border-radius:17px;flex:none;background:var(--ink);color:var(--bg);display:flex;align-items:center;justify-content:center;font:600 13px 'Geist Mono',monospace">{{ o.initial }}</span>{{ o.label }}</button>
+              </sc-for>
+              <div style="display:flex;flex-direction:column;gap:8px;padding-top:6px"><span style="font:500 11px 'Geist Mono',monospace;letter-spacing:.08em;color:var(--mute);padding:0 4px">NOT LISTED? TYPE YOUR NAME</span>
+                <div style="display:flex;gap:8px"><input value="{{ lMe }}" onChange="{{ onLMe }}" onKeyDown="{{ onMeEnter }}" placeholder="Your name" style="width:100%;box-sizing:border-box;height:56px;border-radius:18px;border:1px solid var(--line);background:var(--surf);padding:0 16px;font:400 17px 'Geist',sans-serif;color:var(--ink);outline:none;flex:1;min-width:0"><button onClick="{{ doFinish }}" style="flex:none;height:56px;padding:0 22px;border:none;border-radius:28px;background:var(--ink);color:var(--bg);font:600 15px 'Geist',sans-serif;cursor:pointer">Go</button></div>
+              </div>
+              <sc-if value="{{ hasLErr }}"><div style="padding:14px 16px;border-radius:16px;background:#FF2E63;color:#fff;font:500 14px/1.4 'Geist',sans-serif">{{ lErr }}</div></sc-if>
+              <button onClick="{{ backStep }}" style="height:40px;border:none;background:none;color:var(--mute);font:500 13px 'Geist',sans-serif;cursor:pointer">Use a different key</button>
+            </div>
+          </sc-if>
         </div>
       </sc-if>
 
@@ -563,7 +583,7 @@
   </div>
 </div>
 </x-dc>
-<script type="text/x-dc" data-dc-script data-props="{&quot;theme&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;Light&quot;,&quot;Dark&quot;],&quot;default&quot;:&quot;Light&quot;,&quot;tsType&quot;:&quot;string&quot;},&quot;signature&quot;:{&quot;editor&quot;:&quot;color&quot;,&quot;options&quot;:[&quot;#C8FF2E&quot;,&quot;#00E0FF&quot;,&quot;#FF5CF0&quot;,&quot;#FFE14D&quot;],&quot;default&quot;:&quot;#C8FF2E&quot;,&quot;tsType&quot;:&quot;string&quot;},&quot;startScreen&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;Auto&quot;,&quot;Onboarding&quot;,&quot;Login&quot;,&quot;Today&quot;],&quot;default&quot;:&quot;Auto&quot;,&quot;tsType&quot;:&quot;string&quot;},&quot;desktopView&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;Web app&quot;,&quot;Phone mockup&quot;],&quot;default&quot;:&quot;Web app&quot;,&quot;tsType&quot;:&quot;string&quot;}}">
+<script type="text/x-dc" data-dc-script data-props="{&quot;theme&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;Light&quot;,&quot;Dark&quot;],&quot;default&quot;:&quot;Light&quot;,&quot;tsType&quot;:&quot;string&quot;},&quot;signature&quot;:{&quot;editor&quot;:&quot;color&quot;,&quot;options&quot;:[&quot;#C8FF2E&quot;,&quot;#00E0FF&quot;,&quot;#FF5CF0&quot;,&quot;#FFE14D&quot;],&quot;default&quot;:&quot;#C8FF2E&quot;,&quot;tsType&quot;:&quot;string&quot;},&quot;startScreen&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;Auto&quot;,&quot;Onboarding&quot;,&quot;Login&quot;],&quot;default&quot;:&quot;Auto&quot;,&quot;tsType&quot;:&quot;string&quot;},&quot;desktopView&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;Web app&quot;,&quot;Phone mockup&quot;],&quot;default&quot;:&quot;Web app&quot;,&quot;tsType&quot;:&quot;string&quot;}}">
 class Component extends DCLogic {
   PRI = [
     { label: 'P0', name: 'Highest', c: '#FF2E63', on: '#FFFFFF', hint: 'Drop everything' },
@@ -588,6 +608,7 @@ class Component extends DCLogic {
   cfg = this.ls('bgdx2-cfg');
   queue = this.ls('bgdx2-queue') || [];
   busy = false;
+  DEFAULT_URL = 'https://script.google.com/macros/s/AKfycbxxqxmWfOAsfbaCzViyK2iNVZP2Nn3pBNwkSpc4Ang3PRnBjmDFLfn_cfNG1b_gmxIRrg/exec';
   idx = 0;
   parseHash() {
     const p = (location.hash || '').replace(/^#\/?/, '').split('/');
@@ -615,7 +636,7 @@ class Component extends DCLogic {
       q: '', fPri: [], fType: null, fStatus: 'all', col: 'In Progress', obStep: 0,
       secs: 1500, running: false, newSub: '', toast: null,
       syncSt: mode === 'sheet' ? 'syncing' : mode === 'demo' ? 'demo' : 'idle', pend: (this.ls('bgdx2-queue') || []).length, lastSync: (this.ls('bgdx2-cache') || {}).ts || 0, syncErr: '',
-      lUrl: '', lKey: '', lMe: 'Nafis', lErr: '', lBusy: false,
+      lUrl: '', lKey: '', lMe: '', lErr: '', lBusy: false, lStep: 1, lShowKey: false, lAdv: false, lPend: null,
     };
   })();
   seed() {
@@ -738,22 +759,28 @@ class Component extends DCLogic {
     if (this.queue.length) this.schedule(ok ? 250 : 8000);
   }
   async doConnect() {
-    const { lUrl, lKey, lMe } = this.state, url = lUrl.trim();
-    if (!/^https:\/\/script\.google\.com\/.+\/exec/.test(url)) { this.setState({ lErr: 'That does not look like a web app URL. It should end in /exec.' }); return; }
-    if (!lKey.trim()) { this.setState({ lErr: 'Enter your access key.' }); return; }
+    const { lUrl, lKey } = this.state, url = lUrl.trim() || this.DEFAULT_URL, key = lKey.trim();
+    if (!key) { this.setState({ lErr: 'Enter the access key.' }); return; }
+    if (!/^https:\/\/script\.google\.com\/.+\/exec/.test(url)) { this.setState({ lErr: 'That URL does not look right. It should end in /exec.' }); return; }
     this.setState({ lBusy: true, lErr: '' });
     try {
-      const res = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify({ key: lKey.trim(), action: 'sync', ops: [] }) });
+      const res = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify({ key, action: 'sync', ops: [] }) });
       const j = await res.json();
-      if (!j.ok) throw new Error(j.error === 'auth' ? 'Wrong access key.' : (j.error || 'Server error'));
-      this.cfg = { url, key: lKey.trim(), me: lMe.trim() || 'Nafis' }; this.queue = [];
-      this.sv('bgdx2-cfg', this.cfg); this.sv('bgdx2-queue', []); this.sv('bgdx2-demo', false);
-      this.setState({ mode: 'sheet', tasks: j.tasks, screen: 'today', lBusy: false, lKey: '', syncSt: 'synced', lastSync: Date.now(), pend: 0, ownerF: null });
-    } catch (e) { this.setState({ lBusy: false, lErr: String(e.message || e).replace('Failed to fetch', 'Could not reach the URL. Check it and your connection.') }); }
+      if (!j.ok) throw new Error(j.error === 'auth' ? 'That key is not right. Check it with your admin.' : (j.error || 'Server error'));
+      this.setState({ lBusy: false, lPend: { url, key, tasks: j.tasks }, lStep: 2, lErr: '', lMe: '' });
+    } catch (e) { this.setState({ lBusy: false, lErr: String(e.message || e).replace('Failed to fetch', 'Could not connect. Check your internet and try again.') }); }
+  }
+  finishLogin(name) {
+    const me = (name || '').trim(), p = this.state.lPend;
+    if (!me) { this.setState({ lErr: 'Pick or type your name.' }); return; }
+    if (!p) return;
+    this.cfg = { url: p.url, key: p.key, me }; this.queue = [];
+    this.sv('bgdx2-cfg', this.cfg); this.sv('bgdx2-queue', []);
+    this.setState({ mode: 'sheet', tasks: p.tasks, screen: 'today', lBusy: false, lKey: '', lPend: null, lStep: 1, lErr: '', syncSt: 'synced', lastSync: Date.now(), pend: 0, ownerF: null });
   }
   signOut(msg) {
     this.cfg = null; this.queue = []; this.sv('bgdx2-cfg', null); this.sv('bgdx2-queue', []); this.sv('bgdx2-cache', null); this.sv('bgdx2-demo', false);
-    this.setState({ mode: 'none', tasks: [], screen: 'login', lErr: msg || '', lKey: '', syncSt: 'idle', pend: 0, ownerF: null });
+    this.setState({ mode: 'none', tasks: [], screen: 'login', lErr: msg || '', lKey: '', lStep: 1, lPend: null, syncSt: 'idle', pend: 0, ownerF: null });
   }
   afterOb() { this.sv('bgdx2-onb', true); this.setState(s => ({ screen: s.mode === 'none' ? 'login' : 'today' })); }
   upd(id, fn) {
@@ -900,7 +927,12 @@ class Component extends DCLogic {
       syncNow: () => this.sync(), acctActionLabel: isSheet ? 'Sign out' : 'Connect a sheet', acctAction: () => isSheet ? this.signOut('') : this.go('login'),
       // login
       lUrl: s.lUrl, lKey: s.lKey, lMe: s.lMe, onLUrl: e => this.setState({ lUrl: e.target.value }), onLKey: e => this.setState({ lKey: e.target.value }), onLMe: e => this.setState({ lMe: e.target.value }),
-      hasLErr: !!s.lErr, lErr: s.lErr, lBtn: s.lBusy ? 'Connecting…' : 'Connect', doConnect: () => this.doConnect(),
+      hasLErr: !!s.lErr, lErr: s.lErr, lBtn: s.lBusy ? 'Checking…' : 'Continue', doConnect: () => this.doConnect(),
+      lStep1: s.lStep === 1, lStep2: s.lStep === 2, lKeyType: s.lShowKey ? 'text' : 'password', lShowTxt: s.lShowKey ? 'Hide' : 'Show', toggleKey: () => this.setState({ lShowKey: !s.lShowKey }),
+      lAdv: s.lAdv, lAdvTxt: s.lAdv ? 'Hide advanced' : 'Advanced', toggleAdv: () => this.setState({ lAdv: !s.lAdv }),
+      lTitle: s.lStep === 1 ? 'Sign in' : 'Who are you?', lSub: s.lStep === 1 ? 'Enter the access key your admin shared with you.' : 'Pick your name so tasks are assigned to you.',
+      lWho: this.owners((s.lPend && s.lPend.tasks) || []).map(o => ({ label: o, initial: (o[0] || '?').toUpperCase(), onClick: () => this.finishLogin(o) })),
+      onKeyEnter: e => { if (e.key === 'Enter') this.doConnect(); }, onMeEnter: e => { if (e.key === 'Enter') this.finishLogin(s.lMe); }, doFinish: () => this.finishLogin(s.lMe), backStep: () => this.setState({ lStep: 1, lPend: null, lErr: '' }),
       // onboarding
       ob0: ob === 0, ob1: ob === 1, ob2: ob === 2, obCount: '0' + (ob + 1) + ' / 03',
       obDots: [0, 1, 2].map(i => ({ w: i === ob ? '22px' : '6px', bg: i === ob ? 'var(--ink)' : 'var(--line)' })),
