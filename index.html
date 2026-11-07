@@ -111,7 +111,7 @@
           <div style="display:flex;flex-direction:column;gap:8px"><span style="font:500 11px 'Geist Mono',monospace;letter-spacing:.08em;color:var(--mute);padding:0 4px">YOUR NAME IN THE SHEET</span><input value="{{ lMe }}" onChange="{{ onLMe }}" placeholder="Owner name, e.g. Nafis" style="width:100%;box-sizing:border-box;height:52px;border-radius:18px;border:1px solid var(--line);background:var(--surf);padding:0 16px;font:400 16px 'Geist',sans-serif;color:var(--ink);outline:none"></div>
           <sc-if value="{{ hasLErr }}"><div style="padding:14px 16px;border-radius:16px;background:#FF2E63;color:#fff;font:500 14px/1.4 'Geist',sans-serif">{{ lErr }}</div></sc-if>
           <button onClick="{{ doConnect }}" style="height:56px;border:none;border-radius:28px;background:var(--sig);color:#0F0F12;font:600 16px 'Geist',sans-serif;cursor:pointer">{{ lBtn }}</button>
-          <button onClick="{{ useDemo }}" style="height:44px;border:none;background:none;color:var(--mute);font:500 14px 'Geist',sans-serif;cursor:pointer">Try with demo data</button>
+          
         </div>
       </sc-if>
 
@@ -604,9 +604,9 @@ class Component extends DCLogic {
   }
   state = (() => {
     const cfg = this.cfg, demo = this.ls('bgdx2-demo') === true, seen = this.ls('bgdx2-onb') === true, st = this.props.startScreen ?? 'Auto';
-    const mode = cfg && cfg.url ? 'sheet' : (demo || st === 'Today') ? 'demo' : 'none';
+    const mode = cfg && cfg.url ? 'sheet' : 'none';
     const tasks = mode === 'sheet' ? ((this.ls('bgdx2-cache') || {}).tasks || []) : mode === 'demo' ? (this.ls('bgdx2-demotasks') || this.seed()) : [];
-    let screen = st === 'Onboarding' ? 'onboard' : st === 'Login' ? 'login' : st === 'Today' ? 'today' : mode === 'none' ? (seen ? 'login' : 'onboard') : 'today';
+    let screen = st === 'Onboarding' ? 'onboard' : st === 'Login' ? 'login' : st === 'Today' && mode !== 'none' ? 'today' : mode === 'none' ? (seen ? 'login' : 'onboard') : 'today';
     const hr = this.parseHash(); let sel0 = null;
     if (st === 'Auto' && mode !== 'none' && hr) { screen = hr.screen; sel0 = hr.sel || null; if (screen === 'detail' && !tasks.some(t => t.id === sel0)) { screen = 'today'; sel0 = null; } }
     return {
@@ -755,7 +755,6 @@ class Component extends DCLogic {
     this.cfg = null; this.queue = []; this.sv('bgdx2-cfg', null); this.sv('bgdx2-queue', []); this.sv('bgdx2-cache', null); this.sv('bgdx2-demo', false);
     this.setState({ mode: 'none', tasks: [], screen: 'login', lErr: msg || '', lKey: '', syncSt: 'idle', pend: 0, ownerF: null });
   }
-  useDemo() { this.sv('bgdx2-demo', true); this.setState({ mode: 'demo', tasks: this.ls('bgdx2-demotasks') || this.seed(), screen: 'today', syncSt: 'demo' }); }
   afterOb() { this.sv('bgdx2-onb', true); this.setState(s => ({ screen: s.mode === 'none' ? 'login' : 'today' })); }
   upd(id, fn) {
     let nt;
@@ -901,7 +900,7 @@ class Component extends DCLogic {
       syncNow: () => this.sync(), acctActionLabel: isSheet ? 'Sign out' : 'Connect a sheet', acctAction: () => isSheet ? this.signOut('') : this.go('login'),
       // login
       lUrl: s.lUrl, lKey: s.lKey, lMe: s.lMe, onLUrl: e => this.setState({ lUrl: e.target.value }), onLKey: e => this.setState({ lKey: e.target.value }), onLMe: e => this.setState({ lMe: e.target.value }),
-      hasLErr: !!s.lErr, lErr: s.lErr, lBtn: s.lBusy ? 'Connecting…' : 'Connect', doConnect: () => this.doConnect(), useDemo: () => this.useDemo(),
+      hasLErr: !!s.lErr, lErr: s.lErr, lBtn: s.lBusy ? 'Connecting…' : 'Connect', doConnect: () => this.doConnect(),
       // onboarding
       ob0: ob === 0, ob1: ob === 1, ob2: ob === 2, obCount: '0' + (ob + 1) + ' / 03',
       obDots: [0, 1, 2].map(i => ({ w: i === ob ? '22px' : '6px', bg: i === ob ? 'var(--ink)' : 'var(--line)' })),
