@@ -28,18 +28,25 @@ function doPost(e) {
       if (!canon) return out({ ok: false, error: 'Your key name "' + who + '" is not in the Data owners list. Ask your admin.' });
       who = canon;
     }
-    var lock = LockService.getScriptLock();
+    // The master admin key has no person attached; use the name picked in the app for display and devices.
+    var actor = (who === 'Admin' && body.me) ? String(body.me).trim() : who;
+    if (body.action === 'register' || body.action === 'unregister') {
+      return out(deviceAction(body, actor, admin ? 'admin' : 'member'));
+    }
+    var lock = LockService.getScriptLock(), events = [], result;
     lock.waitLock(20000);
     try {
       var sh = ss().getSheetByName(SHEET_NAME);
       if (!sh) return out({ ok: false, error: 'Sheet tab "' + SHEET_NAME + '" not found' });
       var cols = headerMap(sh);
-      (body.ops || []).forEach(function (op) { if (op.op === 'upsert' && op.task) upsert(sh, cols, op.task, who, admin, owners); });
+      (body.ops || []).forEach(function (op) { if (op.op === 'upsert' && op.task) upsert(sh, cols, op.task, who, admin, owners, actor, events); });
       SpreadsheetApp.flush();
       var all = readAll(sh, cols);
       if (!admin) all = all.filter(function (t) { return t.owner === who; });
-      return out({ ok: true, who: who, role: admin ? 'admin' : 'member', owners: owners, tasks: all });
+      result = { ok: true, who: who, role: admin ? 'admin' : 'member', owners: owners, tasks: all };
     } finally { lock.releaseLock(); }
+    if (events.length) { try { notifyEvents(events, actor); } catch (err) { console.error('push failed: ' + err); } }
+    return out(result);
   } catch (err) { return out({ ok: false, error: String(err) }); }
 }
 
@@ -117,9 +124,9 @@ function authUser(k) {
   return null;
 }
 
-function upsert(sh, cols, t, who, admin, owners) {
+function upsert(sh, cols, t, who, admin, owners, actor, events) {
   if (!admin && owners.indexOf(t.owner) < 0) t.owner = who;
-  var m = cols.map, last = sh.getLastRow(), row = -1, existing = null;
+  var m = cols.map, last = sh.getLastRow(), row = -1, existing = null, before = null;
   if (last >= 2) {
     var ids = sh.getRange(2, m['aid'] + 1, last - 1, 1).getValues();
     for (var i = 0; i < ids.length; i++) if (String(ids[i][0]).trim() === t.id) { row = i + 2; break; }
@@ -128,6 +135,7 @@ function upsert(sh, cols, t, who, admin, owners) {
     existing = sh.getRange(row, 1, 1, cols.width).getValues()[0];
     if (!admin && String(existing[m['ownership']]).trim() !== who) return; // not your task
     if ((Number(existing[m['updated']]) || 0) > (t.upd || 0)) return; // server copy is newer
+    before = existing.slice();
   } else { row = Math.max(last, 1) + 1; existing = new Array(cols.width).fill(''); }
   function set(n, v) { existing[m[n.toLowerCase()]] = v; }
   set('AID', t.id); set('Title', t.title); set('Domain', t.domain); set('Ownership', t.owner); set('Status', t.status);
@@ -135,6 +143,7 @@ function upsert(sh, cols, t, who, admin, owners) {
   set('Due Date', toDate(t.due)); set('Actual Start', toDate(t.start)); set('Actual End', toDate(t.end));
   set('Note', t.notes || ''); set('Checklist', t.subs && t.subs.length ? JSON.stringify(t.subs) : ''); set('PR', t.pr || ''); set('Branch', t.branch || ''); set('Updated', t.upd || Date.now()); set('Updated By', who || '');
   sh.getRange(row, 1, 1, cols.width).setValues([existing]);
+  if (events) collectEvents(events, before, t, m, actor);
 }
 
 // ONE-TIME: select "moveHelperColumns" in the editor and press Run.
@@ -152,4 +161,151 @@ function moveHelperColumns() {
     }
   });
   Logger.log(moved.length ? 'Moved ' + moved.join(', ') : 'Nothing to move');
+}
+
+// ───────────────────────── Push notifications (Firebase Cloud Messaging) ─────────────────────────
+// Setup: Script property FCM_SERVICE_ACCOUNT = the full JSON of a Firebase service-account key.
+// Run setupDailyReminder() once from the editor to schedule the morning reminder.
+var DEVICES_SHEET = 'Devices';
+var DEVICE_HEAD = ['Token', 'Name', 'Role', 'Platform', 'App URL', 'Updated'];
+var REMINDER_HOUR = 9; // spreadsheet time zone
+
+function devicesSheet() {
+  var book = ss(), sh = book.getSheetByName(DEVICES_SHEET);
+  if (!sh) {
+    sh = book.insertSheet(DEVICES_SHEET);
+    sh.getRange(1, 1, 1, DEVICE_HEAD.length).setValues([DEVICE_HEAD]);
+    sh.hideSheet();
+  }
+  return sh;
+}
+
+function readDevices() {
+  var sh = devicesSheet(), last = sh.getLastRow();
+  if (last < 2) return [];
+  return sh.getRange(2, 1, last - 1, DEVICE_HEAD.length).getValues().map(function (r, i) {
+    return { row: i + 2, token: String(r[0]), name: String(r[1]).trim(), role: String(r[2]), platform: String(r[3]), url: String(r[4]) };
+  }).filter(function (d) { return d.token; });
+}
+
+function deviceAction(body, name, role) {
+  var token = String(body.token || '').trim();
+  if (!token || token.length > 4096) return { ok: false, error: 'Missing device token' };
+  var lock = LockService.getScriptLock();
+  lock.waitLock(20000);
+  try {
+    var sh = devicesSheet(), hit = readDevices().filter(function (d) { return d.token === token; })[0];
+    if (body.action === 'unregister') { if (hit) sh.deleteRow(hit.row); return { ok: true }; }
+    var platform = body.platform === 'android' ? 'android' : 'web';
+    var appUrl = /^https:\/\//.test(String(body.appUrl || '')) ? String(body.appUrl).split('#')[0] : '';
+    var row = [token, name, role, platform, appUrl, new Date()];
+    if (hit) sh.getRange(hit.row, 1, 1, row.length).setValues([row]); else sh.appendRow(row);
+    return { ok: true };
+  } finally { lock.releaseLock(); }
+}
+
+// Decide who hears about a saved task. before = old sheet row (null for a new task).
+function collectEvents(events, before, t, m, actor) {
+  var label = t.id + ' · ' + t.title, me = String(actor || '').toLowerCase();
+  var oldOwner = before ? String(before[m['ownership']]).trim() : '';
+  var oldStatus = before ? String(before[m['status']]).trim() : '';
+  var mine = t.owner && t.owner.toLowerCase() !== me;
+  if (mine && (!before || oldOwner !== t.owner)) {
+    events.push({ to: t.owner, title: 'New task for you', body: label + (actor ? '\nAssigned by ' + actor : ''), url: '#/detail/' + t.id, tag: t.id });
+  } else if (mine && before) {
+    var ch = [];
+    if (oldStatus !== t.status) ch.push('Status: ' + oldStatus + ' → ' + t.status);
+    var oldPri = String(before[m['priority']]).trim(), newPri = PRIORITIES[t.pri] || '';
+    if (oldPri !== newPri) ch.push('Priority: ' + (oldPri || 'None') + ' → ' + (newPri || 'None'));
+    var oldDue = iso(before[m['due date']]);
+    if (oldDue !== (t.due || '')) ch.push('Due: ' + (oldDue || 'none') + ' → ' + (t.due || 'none'));
+    if (ch.length) events.push({ to: t.owner, title: actor + ' updated your task', body: label + '\n' + ch.join(' · '), url: '#/detail/' + t.id, tag: t.id });
+  }
+  if (t.status === 'Blocked' && oldStatus !== 'Blocked') {
+    events.push({ toAdmins: true, title: 'Task blocked', body: label + '\nOwner: ' + (t.owner || '—') + (actor ? ' · by ' + actor : ''), url: '#/detail/' + t.id, tag: t.id + '-blocked' });
+  }
+}
+
+function notifyEvents(events, actor) {
+  var devices = readDevices(), me = String(actor || '').toLowerCase(), msgs = [];
+  events.forEach(function (e) {
+    devices.forEach(function (d) {
+      var n = d.name.toLowerCase();
+      var hit = e.toAdmins ? (d.role === 'admin' && n !== me) : (n === String(e.to).toLowerCase());
+      if (hit) msgs.push({ device: d, title: e.title, body: e.body, url: e.url, tag: e.tag });
+    });
+  });
+  sendPush(msgs);
+}
+
+// Daily: each person gets one message with what is due today and what is overdue.
+function dailyReminder() {
+  var sh = ss().getSheetByName(SHEET_NAME); if (!sh) return;
+  var tasks = readAll(sh, headerMap(sh)), devices = readDevices(), msgs = [];
+  var today = Utilities.formatDate(new Date(), ss().getSpreadsheetTimeZone(), 'yyyy-MM-dd');
+  var names = {}; devices.forEach(function (d) { names[d.name.toLowerCase()] = d.name; });
+  Object.keys(names).forEach(function (key) {
+    var open = tasks.filter(function (t) { return t.owner.toLowerCase() === key && t.status !== 'Closed' && t.due && t.due <= today; });
+    if (!open.length) return;
+    var dueToday = open.filter(function (t) { return t.due === today; }).length, late = open.length - dueToday;
+    var head = [dueToday ? dueToday + ' due today' : '', late ? late + ' overdue' : ''].filter(String).join(' · ');
+    open.sort(function (a, b) { return a.pri - b.pri || a.due.localeCompare(b.due); });
+    var body = open.slice(0, 3).map(function (t) { return t.id + ' ' + t.title; }).join('\n') + (open.length > 3 ? '\n+' + (open.length - 3) + ' more' : '');
+    devices.forEach(function (d) { if (d.name.toLowerCase() === key) msgs.push({ device: d, title: head, body: body, url: '#/today', tag: 'daily' }); });
+  });
+  sendPush(msgs);
+}
+
+// ONE-TIME: select "setupDailyReminder" in the editor and press Run. Safe to run again.
+function setupDailyReminder() {
+  ScriptApp.getProjectTriggers().forEach(function (tr) { if (tr.getHandlerFunction() === 'dailyReminder') ScriptApp.deleteTrigger(tr); });
+  ScriptApp.newTrigger('dailyReminder').timeBased().everyDays(1).atHour(REMINDER_HOUR).create();
+  Logger.log('Daily reminder scheduled around ' + REMINDER_HOUR + ':00 (' + ss().getSpreadsheetTimeZone() + ')');
+}
+
+// Run from the editor after turning notifications on in the app: sends a test to every device.
+function testPush() {
+  sendPush(readDevices().map(function (d) { return { device: d, title: 'BGDX test', body: 'Notifications work for ' + d.name, url: '#/today', tag: 'test' }; }));
+}
+
+function fcmAuth() {
+  var raw = PropertiesService.getScriptProperties().getProperty('FCM_SERVICE_ACCOUNT');
+  if (!raw) return null;
+  var sa = JSON.parse(raw), cache = CacheService.getScriptCache(), tok = cache.get('fcm-token');
+  if (!tok) {
+    var now = Math.floor(Date.now() / 1000);
+    var enc = function (o) { return Utilities.base64EncodeWebSafe(JSON.stringify(o)).replace(/=+$/, ''); };
+    var unsigned = enc({ alg: 'RS256', typ: 'JWT' }) + '.' + enc({ iss: sa.client_email, scope: 'https://www.googleapis.com/auth/firebase.messaging', aud: 'https://oauth2.googleapis.com/token', iat: now, exp: now + 3600 });
+    var sig = Utilities.base64EncodeWebSafe(Utilities.computeRsaSha256Signature(unsigned, sa.private_key)).replace(/=+$/, '');
+    var res = UrlFetchApp.fetch('https://oauth2.googleapis.com/token', { method: 'post', payload: { grant_type: 'urn:ietf:params:oauth:grant-type:jwt-bearer', assertion: unsigned + '.' + sig }, muteHttpExceptions: true });
+    var j = JSON.parse(res.getContentText());
+    if (!j.access_token) throw new Error('FCM auth failed: ' + res.getContentText());
+    tok = j.access_token; cache.put('fcm-token', tok, 3000);
+  }
+  return { project: sa.project_id, token: tok };
+}
+
+function sendPush(msgs) {
+  if (!msgs.length) return;
+  var auth = fcmAuth(); if (!auth) return;
+  var endpoint = 'https://fcm.googleapis.com/v1/projects/' + auth.project + '/messages:send';
+  var reqs = msgs.map(function (x) {
+    var d = x.device, message = { token: d.token, notification: { title: x.title, body: x.body }, data: { url: x.url, tag: x.tag } };
+    if (d.platform === 'android') message.android = { priority: 'high', notification: { tag: x.tag } };
+    else {
+      message.webpush = { headers: { Urgency: 'high' }, notification: { tag: x.tag, renotify: true } };
+      if (d.url) { message.webpush.fcm_options = { link: d.url + x.url }; message.webpush.notification.icon = d.url.replace(/[^/]*$/, '') + 'icon-192.png'; }
+    }
+    return { url: endpoint, method: 'post', contentType: 'application/json', headers: { Authorization: 'Bearer ' + auth.token }, payload: JSON.stringify({ message: message }), muteHttpExceptions: true };
+  });
+  var res = UrlFetchApp.fetchAll(reqs), dead = [];
+  res.forEach(function (r, i) {
+    var code = r.getResponseCode(), txt = r.getContentText();
+    if (code === 404 || /UNREGISTERED|registration-token-not-registered/.test(txt)) dead.push(msgs[i].device.token);
+    else if (code >= 300) console.error('FCM ' + code + ': ' + txt);
+  });
+  if (dead.length) {
+    var sh = devicesSheet();
+    readDevices().filter(function (d) { return dead.indexOf(d.token) >= 0; }).reverse().forEach(function (d) { sh.deleteRow(d.row); });
+  }
 }

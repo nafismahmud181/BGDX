@@ -1,5 +1,14 @@
 {
   "appId": "com.bgdmart.bgdx",
   "appName": "BGDX",
-  "webDir": "www"
+  "webDir": "www",
+  "plugins": {
+    "PushNotifications": {
+      "presentationOptions": [
+        "badge",
+        "sound",
+        "alert"
+      ]
+    }
+  }
 }

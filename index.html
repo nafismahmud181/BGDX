@@ -3,6 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./firebase-config.js"></script>
 <script src="./support.js"></script>
 </head>
 <body>
@@ -151,6 +152,8 @@
             <div style="display:flex;justify-content:space-between;gap:12px;padding:14px 0"><span style="font:500 12px 'Geist Mono',monospace;color:var(--mute)">PENDING CHANGES</span><span style="font:500 14px 'Geist',sans-serif;color:var(--ink)">{{ acctPend }}</span></div>
           </div>
           <sc-if value="{{ isSheet }}"><button onClick="{{ syncNow }}" style="height:56px;border:none;border-radius:28px;background:var(--sig);color:#0F0F12;font:600 16px 'Geist',sans-serif;cursor:pointer;margin-top:8px">Sync now</button></sc-if>
+          <sc-if value="{{ showPushBtn }}"><button onClick="{{ togglePush }}" style="height:56px;border:none;border-radius:28px;background:var(--surf);color:var(--ink);font:600 16px 'Geist',sans-serif;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:10px"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 16V11a6 6 0 1112 0v5l1.5 2h-15zM10 20.5a2 2 0 004 0"></path></svg>{{ pushLabel }}</button></sc-if>
+          <sc-if value="{{ hasPushHint }}"><div style="padding:2px 12px 6px;font:400 13px/1.45 'Geist',sans-serif;color:{{ pushHintColor }};text-align:center;text-wrap:pretty">{{ pushHint }}</div></sc-if>
           <button onClick="{{ acctAction }}" style="height:56px;border:none;border-radius:28px;background:var(--ink);color:var(--bg);font:600 16px 'Geist',sans-serif;cursor:pointer">{{ acctActionLabel }}</button>
           <button onClick="{{ toggleDark }}" style="height:56px;border:none;border-radius:28px;background:var(--surf);color:var(--ink);font:600 16px 'Geist',sans-serif;cursor:pointer">Switch theme</button>
           <div style="text-align:center;font:400 12px 'Geist Mono',monospace;color:var(--mute);padding-top:8px">BGDX v{{ version }}</div>
@@ -681,7 +684,7 @@ class Component extends DCLogic {
       q: '', fPri: [], fType: null, fStatus: 'all', col: 'In Progress', obStep: 0,
       secs: 1500, running: false, newSub: '', toast: null,
       syncSt: mode === 'sheet' ? 'syncing' : 'idle', pend: (this.ls('bgdx2-queue') || []).length, lastSync: (this.ls('bgdx2-cache') || {}).ts || 0, syncErr: '',
-      lUrl: '', lKey: '', lMe: '', lErr: '', lBusy: false, lStep: 1, lShowKey: false, lAdv: false, lPend: null, dOwners: null, adminView: 'team',
+      lUrl: '', lKey: '', lMe: '', lErr: '', lBusy: false, lStep: 1, lShowKey: false, lAdv: false, lPend: null, dOwners: null, adminView: 'team', pushOn: !!(this.ls('bgdx2-push') || {}).on, pushBusy: false, pushErr: '',
     };
   })();
   iso(d) { const z = n => String(n).padStart(2, '0'); return d.getFullYear() + '-' + z(d.getMonth() + 1) + '-' + z(d.getDate()); }
@@ -702,6 +705,96 @@ class Component extends DCLogic {
     const me = this.me(); set.sort((a, b) => (b === me) - (a === me) || a.localeCompare(b)); return set;
   }
   types(tasks) { const o = [...this.DOMAINS]; tasks.forEach(t => { if (t.domain && !o.includes(t.domain)) o.push(t.domain); }); return o; }
+  // ── Push notifications ──
+  // native = Android app (Capacitor plugin), web = browser / iPhone Home Screen app (Firebase).
+  pushKind() {
+    const C = window.Capacitor;
+    if (C && C.isNativePlatform && C.isNativePlatform()) return C.Plugins && C.Plugins.PushNotifications ? 'native' : 'none';
+    const ios = /iPhone|iPad|iPod/.test(navigator.userAgent), sa = matchMedia('(display-mode: standalone)').matches || navigator.standalone;
+    if (ios && !sa) return 'ios-install';
+    if (!('serviceWorker' in navigator) || !('PushManager' in window) || !('Notification' in window)) return 'none';
+    const fb = window.BGDX_FIREBASE; if (!fb || !fb.apiKey) return 'noconfig';
+    return 'web';
+  }
+  async api(body) {
+    const cfg = this.cfg; if (!cfg) throw new Error('Not signed in');
+    const res = await fetch(cfg.url, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify({ key: cfg.key, me: cfg.me, ...body }) });
+    const j = await res.json(); if (!j.ok) throw new Error(j.error || 'Server error'); return j;
+  }
+  loadScript(src) { return new Promise((ok, no) => { const el = document.createElement('script'); el.src = src; el.onload = ok; el.onerror = () => no(new Error('Could not load ' + src)); document.head.appendChild(el); }); }
+  async fbMessaging() {
+    if (!window.firebase || !firebase.messaging) {
+      await this.loadScript('https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js');
+      await this.loadScript('https://www.gstatic.com/firebasejs/10.14.1/firebase-messaging-compat.js');
+    }
+    if (!firebase.apps.length) firebase.initializeApp(window.BGDX_FIREBASE);
+    const m = firebase.messaging();
+    if (!this._fbFg) { this._fbFg = true; m.onMessage(p => this.onForegroundPush(p.notification || {})); }
+    return m;
+  }
+  async webToken() {
+    const m = await this.fbMessaging(), reg = await navigator.serviceWorker.ready;
+    return m.getToken({ ...(window.BGDX_FIREBASE.vapidKey ? { vapidKey: window.BGDX_FIREBASE.vapidKey } : {}), serviceWorkerRegistration: reg });
+  }
+  nativeToken() {
+    const P = window.Capacitor.Plugins.PushNotifications;
+    return new Promise((ok, no) => { this._regWait = { ok, no }; P.register().catch(no); setTimeout(() => no(new Error('No token from Firebase. Is google-services.json in the Android project?')), 20000); });
+  }
+  initNativePush() {
+    if (this._natInit) return; this._natInit = true;
+    const P = window.Capacitor.Plugins.PushNotifications;
+    P.addListener('registration', t => { if (this._regWait) { this._regWait.ok(t.value); this._regWait = null; } else this.savePushToken(t.value); });
+    P.addListener('registrationError', e => { if (this._regWait) { this._regWait.no(new Error(e.error || 'Registration failed')); this._regWait = null; } });
+    P.addListener('pushNotificationReceived', n => this.onForegroundPush(n));
+    P.addListener('pushNotificationActionPerformed', a => { const u = a.notification && a.notification.data && a.notification.data.url; if (u && this.state.mode === 'sheet') location.hash = u; });
+  }
+  onForegroundPush(n) { if (n.title) this.flash(n.title); if (this.state.mode === 'sheet') this.sync(); }
+  async savePushToken(token) {
+    const kind = this.pushKind(), prev = this.ls('bgdx2-push') || {};
+    await this.api({ action: 'register', token, platform: kind === 'native' ? 'android' : 'web', appUrl: kind === 'web' ? location.href.split('#')[0] : '' });
+    if (prev.token && prev.token !== token) this.api({ action: 'unregister', token: prev.token }).catch(() => {});
+    this.sv('bgdx2-push', { on: true, token });
+  }
+  async enablePush() {
+    const kind = this.pushKind();
+    this.setState({ pushBusy: true, pushErr: '' });
+    try {
+      let token;
+      if (kind === 'native') {
+        const P = window.Capacitor.Plugins.PushNotifications; this.initNativePush();
+        let p = await P.checkPermissions(); if (p.receive !== 'granted') p = await P.requestPermissions();
+        if (p.receive !== 'granted') throw new Error('Notifications are blocked. Allow them for BGDX in Android Settings > Apps.');
+        token = await this.nativeToken();
+      } else if (kind === 'web') {
+        const perm = await Notification.requestPermission();
+        if (perm !== 'granted') throw new Error('Notifications are blocked. Allow them for BGDX in your phone or browser settings.');
+        token = await this.webToken();
+      } else return;
+      await this.savePushToken(token);
+      this.setState({ pushOn: true, pushBusy: false }); this.flash('Notifications on');
+    } catch (e) { this.setState({ pushBusy: false, pushErr: String(e.message || e) }); }
+  }
+  async disablePush() {
+    const prev = this.ls('bgdx2-push') || {};
+    this.setState({ pushBusy: true, pushErr: '' });
+    try { if (prev.token) await this.api({ action: 'unregister', token: prev.token }); } catch (e) {}
+    try { if (this.pushKind() === 'native') await window.Capacitor.Plugins.PushNotifications.unregister(); else if (window.firebase && firebase.apps.length) await firebase.messaging().deleteToken(); } catch (e) {}
+    this.sv('bgdx2-push', null); this.setState({ pushOn: false, pushBusy: false }); this.flash('Notifications off');
+  }
+  // On launch: refresh the token silently so the server always has a working one.
+  async refreshPush() {
+    const prev = this.ls('bgdx2-push'); if (!prev || !prev.on || this.state.mode !== 'sheet') return;
+    const kind = this.pushKind();
+    try {
+      if (kind === 'native') {
+        this.initNativePush();
+        const p = await window.Capacitor.Plugins.PushNotifications.checkPermissions();
+        if (p.receive === 'granted') await this.savePushToken(await this.nativeToken()); else { this.sv('bgdx2-push', null); this.setState({ pushOn: false }); }
+      } else if (kind === 'web') {
+        if (Notification.permission === 'granted') await this.savePushToken(await this.webToken()); else { this.sv('bgdx2-push', null); this.setState({ pushOn: false }); }
+      }
+    } catch (e) {}
+  }
   componentDidMount() {
     this.onKey = e => { const tg = (e.target.tagName || '').toLowerCase(); if (e.key === 'Escape') this.setState({ sheet: false }); else if ((e.key === 'n' || e.key === 'c') && !e.metaKey && !e.ctrlKey && tg !== 'input' && tg !== 'textarea' && ['today', 'board', 'search', 'review'].includes(this.state.screen)) { e.preventDefault(); this.openSheet(); } };
     window.addEventListener('keydown', this.onKey);
@@ -735,6 +828,7 @@ class Component extends DCLogic {
     this.timer = setInterval(() => { if (this.state.running && this.state.secs > 0) this.setState(s => ({ secs: s.secs - 1 })); }, 1000);
     this.poll = setInterval(() => { if (this.state.mode === 'sheet' && !document.hidden) this.sync(); else this.forceUpdate(); }, 30000);
     if (this.state.mode === 'sheet') this.sync();
+    this.refreshPush();
   }
   componentWillUnmount() {
     ['keydown'].forEach(() => window.removeEventListener('keydown', this.onKey));
@@ -753,7 +847,7 @@ class Component extends DCLogic {
     if (this._pt !== s.tasks) {
       const first = this._pt === undefined; this._pt = s.tasks;
       if (!first) {
-        if (s.mode === 'sheet') this.sv('bgdx2-cache', { tasks: s.tasks, ts: s.lastSync });
+        if (s.mode === 'sheet') this.sv('bgdx2-cache', { tasks: s.tasks, ts: s.lastSync });
       }
     }
     if (this._pd !== s.dark) { const first = this._pd === undefined; this._pd = s.dark; if (!first) this.sv('bgdx2-dark', s.dark); }
@@ -770,7 +864,7 @@ class Component extends DCLogic {
     this.busy = true; this.setState({ syncSt: 'syncing' });
     const sent = this.queue.slice(); let ok = false;
     try {
-      const res = await fetch(cfg.url, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify({ key: cfg.key, action: 'sync', ops: sent.map(q => ({ op: 'upsert', task: q.task })) }) });
+      const res = await fetch(cfg.url, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify({ key: cfg.key, me: cfg.me, action: 'sync', ops: sent.map(q => ({ op: 'upsert', task: q.task })) }) });
       const j = await res.json();
       if (!j.ok) { if (j.error === 'auth') { this.busy = false; this.signOut('The access key was rejected. Sign in again.'); return; } throw new Error(j.error || 'Server error'); }
       if (j.role && j.role !== cfg.role) { this.cfg = { ...cfg, role: j.role }; this.sv('bgdx2-cfg', this.cfg); }
@@ -810,6 +904,8 @@ class Component extends DCLogic {
     this.setState({ mode: 'sheet', tasks: p.tasks, dOwners: p.owners || [], screen: 'today', lBusy: false, lKey: '', lPend: null, lStep: 1, lErr: '', syncSt: 'synced', lastSync: Date.now(), pend: 0, ownerF: null });
   }
   signOut(msg) {
+    const pp = this.ls('bgdx2-push'); if (pp && pp.token && this.cfg) this.api({ action: 'unregister', token: pp.token }).catch(() => {});
+    this.sv('bgdx2-push', null); this.setState({ pushOn: false, pushErr: '' });
     this.cfg = null; this.queue = []; this.sv('bgdx2-cfg', null); this.sv('bgdx2-queue', []); this.sv('bgdx2-cache', null);
     this.setState({ mode: 'none', tasks: [], screen: 'login', lErr: msg || '', lKey: '', lStep: 1, lPend: null, syncSt: 'idle', pend: 0, ownerF: null });
   }
@@ -956,7 +1052,16 @@ class Component extends DCLogic {
       // sync / account
       syncColor, syncShort, syncText, meInitial: (this.me()[0] || 'B').toUpperCase(), isSheet,
       acctTitle: isSheet ? 'Google Sheet connected' : 'Not connected', acctHost: host || 'None', acctMe: this.me(), acctPend: String(s.pend),
-      syncNow: () => this.sync(), acctActionLabel: isSheet ? 'Sign out' : 'Connect a sheet', acctAction: () => isSheet ? this.signOut('') : this.go('login'),
+      syncNow: () => this.sync(),
+      ...(() => {
+        const k = this.pushKind(), can = k === 'web' || k === 'native';
+        const hint = s.pushErr || (k === 'ios-install' ? 'On iPhone, notifications need the Home Screen app: tap Share, then Add to Home Screen, and open BGDX from there.' : k === 'noconfig' ? 'Push is not set up yet (firebase-config.js is empty).' : k === 'none' ? 'This browser does not support notifications.' : s.pushOn ? 'You get alerts for tasks assigned to you, changes to your tasks, a morning due reminder' + (this.cfg && this.cfg.role === 'admin' ? ', and blocked tasks.' : '.') : '');
+        return {
+          showPushBtn: isSheet && can, pushHint: hint, hasPushHint: isSheet && !!hint, pushHintColor: s.pushErr ? '#FF2E63' : 'var(--mute)',
+          pushLabel: s.pushBusy ? 'Working…' : s.pushOn ? 'Turn off notifications' : 'Turn on notifications',
+          togglePush: () => { if (!s.pushBusy) (s.pushOn ? this.disablePush() : this.enablePush()); },
+        };
+      })(), acctActionLabel: isSheet ? 'Sign out' : 'Connect a sheet', acctAction: () => isSheet ? this.signOut('') : this.go('login'),
       // login
       lUrl: s.lUrl, lKey: s.lKey, lMe: s.lMe, onLUrl: e => this.setState({ lUrl: e.target.value }), onLKey: e => this.setState({ lKey: e.target.value }), onLMe: e => this.setState({ lMe: e.target.value }),
       hasLErr: !!s.lErr, lErr: s.lErr, lBtn: s.lBusy ? 'Checking…' : 'Continue', doConnect: () => this.doConnect(),
