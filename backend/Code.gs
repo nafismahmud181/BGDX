@@ -9,22 +9,22 @@ var SPREADSHEET_ID = '1sbtGjaURWWbiko5G33Zk8noOzolXl80su83kKiQykPQ';
 function ss() { return SPREADSHEET_ID ? SpreadsheetApp.openById(SPREADSHEET_ID) : SpreadsheetApp.getActiveSpreadsheet(); }
 var PRIORITIES = ['Highest', 'Medium', 'Low', 'Lowest'];
 var STATUSES = ['Backlog', 'In Progress', 'Blocked', 'Parked', 'Closed'];
-var REQUIRED = ['AID', 'Title', 'Domain', 'Ownership', 'Status', 'Priority', 'Cost Required?', 'Tentative Cost', 'Due Date', 'Actual Start', 'Actual End', 'Notes', 'Checklist', 'PR', 'Branch', 'Updated'];
+var REQUIRED = ['AID', 'Title', 'Domain', 'Ownership', 'Status', 'Priority', 'Cost Required?', 'Tentative Cost', 'Due Date', 'Actual Start', 'Actual End', 'Note', 'Checklist', 'PR', 'Branch', 'Updated', 'Updated By'];
 
 function doGet() { return out({ ok: true, msg: 'BGDX API is running' }); }
 
 function doPost(e) {
   try {
     var body = JSON.parse(e.postData.contents);
-    var key = PropertiesService.getScriptProperties().getProperty('BGDX_KEY');
-    if (!key || body.key !== key) return out({ ok: false, error: 'auth' });
+    var who = authUser(body.key);
+    if (!who) return out({ ok: false, error: 'auth' });
     var lock = LockService.getScriptLock();
     lock.waitLock(20000);
     try {
       var sh = ss().getSheetByName(SHEET_NAME);
       if (!sh) return out({ ok: false, error: 'Sheet tab "' + SHEET_NAME + '" not found' });
       var cols = headerMap(sh);
-      (body.ops || []).forEach(function (op) { if (op.op === 'upsert' && op.task) upsert(sh, cols, op.task); });
+      (body.ops || []).forEach(function (op) { if (op.op === 'upsert' && op.task) upsert(sh, cols, op.task, who); });
       SpreadsheetApp.flush();
       return out({ ok: true, tasks: readAll(sh, cols) });
     } finally { lock.releaseLock(); }
@@ -70,13 +70,25 @@ function readAll(sh, cols) {
       status: STATUSES.indexOf(status) >= 0 ? status : 'Backlog', pri: pri < 0 ? 4 : pri,
       costReq: String(g(r, 'Cost Required?')).trim().toUpperCase() === 'YES', cost: typeof cost === 'number' ? cost : '',
       due: iso(g(r, 'Due Date')), start: iso(g(r, 'Actual Start')), end: iso(g(r, 'Actual End')),
-      notes: String(g(r, 'Notes')), subs: subs, pr: String(g(r, 'PR')), branch: String(g(r, 'Branch')), upd: Number(g(r, 'Updated')) || 0
+      notes: String(g(r, 'Note')), subs: subs, pr: String(g(r, 'PR')), branch: String(g(r, 'Branch')), upd: Number(g(r, 'Updated')) || 0
     });
   });
   return tasks;
 }
 
-function upsert(sh, cols, t) {
+// Keys: BGDX_KEYS = {"Rafi":"key1","Nadia":"key2"} (one per person). BGDX_KEY stays as the admin master key.
+function authUser(k) {
+  if (!k) return null;
+  var p = PropertiesService.getScriptProperties(), master = p.getProperty('BGDX_KEY');
+  if (master && k === master) return 'Admin';
+  try {
+    var m = JSON.parse(p.getProperty('BGDX_KEYS') || '{}');
+    for (var n in m) if (m[n] && m[n] === k) return n;
+  } catch (e) {}
+  return null;
+}
+
+function upsert(sh, cols, t, who) {
   var m = cols.map, last = sh.getLastRow(), row = -1, existing = null;
   if (last >= 2) {
     var ids = sh.getRange(2, m['aid'] + 1, last - 1, 1).getValues();
@@ -90,6 +102,6 @@ function upsert(sh, cols, t) {
   set('AID', t.id); set('Title', t.title); set('Domain', t.domain); set('Ownership', t.owner); set('Status', t.status);
   set('Priority', PRIORITIES[t.pri] || ''); set('Cost Required?', t.costReq ? 'YES' : 'NO'); set('Tentative Cost', t.cost === '' ? '' : t.cost);
   set('Due Date', toDate(t.due)); set('Actual Start', toDate(t.start)); set('Actual End', toDate(t.end));
-  set('Notes', t.notes || ''); set('Checklist', t.subs && t.subs.length ? JSON.stringify(t.subs) : ''); set('PR', t.pr || ''); set('Branch', t.branch || ''); set('Updated', t.upd || Date.now());
+  set('Note', t.notes || ''); set('Checklist', t.subs && t.subs.length ? JSON.stringify(t.subs) : ''); set('PR', t.pr || ''); set('Branch', t.branch || ''); set('Updated', t.upd || Date.now()); set('Updated By', who || '');
   sh.getRange(row, 1, 1, cols.width).setValues([existing]);
 }
