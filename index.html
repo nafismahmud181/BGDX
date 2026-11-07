@@ -1,0 +1,695 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#F4F3EF">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon-192.png">
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>*{scrollbar-width:none}body{margin:0;background:#DEDCD6;-webkit-font-smoothing:antialiased}a{color:#0F0F12}a:hover{color:#6B4BFF}input::placeholder{color:#8E8D99}*::-webkit-scrollbar{display:none}</style>
+</helmet>
+<div style="min-height:{{ rootMinH }};display:flex;flex-direction:column;align-items:center;gap:20px;padding:{{ rootPad }};box-sizing:border-box;font-family:'Geist',system-ui,sans-serif">
+  <div style="display:{{ jumpDisp }};flex-wrap:wrap;gap:6px;justify-content:center;max-width:720px">
+    <sc-for list="{{ jumps }}" as="j" hint-placeholder-count="8">
+      <button onClick="{{ j.onClick }}" style="border:none;font:500 12px 'Geist Mono',monospace;padding:7px 11px;border-radius:999px;cursor:pointer;background:{{ j.bg }};color:{{ j.fg }}">{{ j.label }}</button>
+    </sc-for>
+  </div>
+  <div style="{{ frameStyle }}">
+    <div style="{{ themeVars }}">
+
+      <!-- ONBOARDING -->
+      <sc-if value="{{ isOnboard }}">
+        <div style="flex:1;display:flex;flex-direction:column;padding:24px 24px 28px">
+          <div style="display:flex;justify-content:space-between;align-items:center;height:44px">
+            <span style="font:600 13px 'Geist Mono',monospace;letter-spacing:.08em;color:var(--mute)">{{ obCount }}</span>
+            <button onClick="{{ finishOb }}" style="border:none;background:none;font:500 14px 'Geist',sans-serif;color:var(--mute);cursor:pointer;padding:12px 0">Skip</button>
+          </div>
+          <sc-if value="{{ ob0 }}">
+            <div style="flex:1;display:flex;flex-direction:column;justify-content:center;gap:28px">
+              <div style="display:flex;gap:6px;height:120px;align-items:flex-end">
+                <div style="flex:1;height:100%;border-radius:14px;background:#FF2E63"></div>
+                <div style="flex:1;height:78%;border-radius:14px;background:#FF8A00"></div>
+                <div style="flex:1;height:56%;border-radius:14px;background:#6B4BFF"></div>
+                <div style="flex:1;height:34%;border-radius:14px;background:#12C79A"></div>
+              </div>
+              <div style="font:700 88px/0.9 'Geist',sans-serif;letter-spacing:-.05em;color:var(--ink)">BGDX</div>
+              <div style="font:400 19px/1.4 'Geist',sans-serif;color:var(--mute);text-wrap:pretty;max-width:300px">Tech ops for BGD MART. One board for every bug, feature and fire. No Jira.</div>
+            </div>
+          </sc-if>
+          <sc-if value="{{ ob1 }}">
+            <div style="flex:1;display:flex;flex-direction:column;justify-content:center;gap:24px">
+              <div style="font:600 34px/1.05 'Geist',sans-serif;letter-spacing:-.03em;color:var(--ink);text-wrap:pretty">Four colors.<br>Zero ambiguity.</div>
+              <div style="display:flex;flex-direction:column;gap:8px">
+                <sc-for list="{{ priLegend }}" as="p" hint-placeholder-count="4">
+                  <div style="display:flex;align-items:center;gap:14px;padding:16px;border-radius:18px;background:{{ p.c }};color:{{ p.on }}">
+                    <span style="font:600 14px 'Geist Mono',monospace">{{ p.label }}</span>
+                    <span style="font:600 17px 'Geist',sans-serif;flex:1">{{ p.name }}</span>
+                    <span style="font:400 13px 'Geist',sans-serif;opacity:.85">{{ p.hint }}</span>
+                  </div>
+                </sc-for>
+              </div>
+            </div>
+          </sc-if>
+          <sc-if value="{{ ob2 }}">
+            <div style="flex:1;display:flex;flex-direction:column;justify-content:center;gap:24px">
+              <div style="font:600 34px/1.05 'Geist',sans-serif;letter-spacing:-.03em;color:var(--ink);text-wrap:pretty">Link your repo.<br>Close tasks with PRs.</div>
+              <div style="font:400 16px/1.45 'Geist',sans-serif;color:var(--mute);text-wrap:pretty">Mention <span style="font-family:'Geist Mono',monospace;color:var(--ink)">BX-014</span> in a PR and the task moves to Done when it merges.</div>
+              <button onClick="{{ toggleGh }}" style="display:flex;align-items:center;gap:14px;padding:18px;border-radius:18px;border:1px solid var(--line);background:var(--surf);cursor:pointer;text-align:left;font:inherit;color:var(--ink)">
+                <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="6" cy="5" r="2"></circle><circle cx="6" cy="19" r="2"></circle><circle cx="18" cy="19" r="2"></circle><path d="M6 7v10M18 17V9a3 3 0 00-3-3h-4"></path><path d="M13 3.5L10.5 6 13 8.5"></path></svg>
+                <span style="flex:1;display:flex;flex-direction:column;gap:2px"><span style="font:600 16px 'Geist',sans-serif">GitHub</span><span style="font:400 13px 'Geist Mono',monospace;color:var(--mute)">{{ ghSub }}</span></span>
+                <span style="font:600 13px 'Geist',sans-serif;padding:8px 12px;border-radius:999px;background:{{ ghBtnBg }};color:{{ ghBtnFg }}">{{ ghBtn }}</span>
+              </button>
+            </div>
+          </sc-if>
+          <div style="display:flex;align-items:center;justify-content:space-between;gap:16px">
+            <div style="display:flex;gap:6px">
+              <sc-for list="{{ obDots }}" as="d" hint-placeholder-count="3"><span style="height:6px;border-radius:3px;transition:all .3s;width:{{ d.w }};background:{{ d.bg }}"></span></sc-for>
+            </div>
+            <button onClick="{{ obNext }}" style="border:none;height:56px;padding:0 28px;border-radius:28px;background:var(--sig);color:#0F0F12;font:600 16px 'Geist',sans-serif;cursor:pointer;display:flex;align-items:center;gap:10px">{{ obCta }}<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"></path></svg></button>
+          </div>
+        </div>
+      </sc-if>
+
+      <!-- TODAY -->
+      <sc-if value="{{ isToday }}">
+        <div style="flex:1;overflow:auto;padding:8px 16px 110px">
+          <div style="display:flex;align-items:center;justify-content:space-between;height:48px">
+            <span style="font:700 17px 'Geist',sans-serif;letter-spacing:-.03em;color:var(--ink)">BGDX</span>
+            <div style="display:flex;gap:8px;align-items:center">
+              <button onClick="{{ toggleDark }}" aria-label="Toggle theme" style="width:44px;height:44px;border-radius:22px;border:none;background:var(--surf);color:var(--ink);cursor:pointer;display:flex;align-items:center;justify-content:center">
+                <sc-if value="{{ dark }}"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4"></circle><path d="M12 2.5v2M12 19.5v2M2.5 12h2M19.5 12h2M5.3 5.3l1.4 1.4M17.3 17.3l1.4 1.4M5.3 18.7l1.4-1.4M17.3 6.7l1.4-1.4"></path></svg></sc-if>
+                <sc-if value="{{ light }}"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M20 14.5A8 8 0 019.5 4a8 8 0 1010.5 10.5z"></path></svg></sc-if>
+              </button>
+              <div style="width:44px;height:44px;border-radius:22px;background:var(--ink);color:var(--bg);display:flex;align-items:center;justify-content:center;font:600 12px 'Geist Mono',monospace">CTO</div>
+            </div>
+          </div>
+          <div style="padding:18px 4px 20px">
+            <div style="font:500 14px 'Geist Mono',monospace;color:var(--mute);letter-spacing:.02em">SAT · NOV 7</div>
+            <div style="font:600 40px/1 'Geist',sans-serif;letter-spacing:-.04em;color:var(--ink);margin-top:8px">{{ todayHeadline }}</div>
+            <div style="display:flex;gap:3px;margin-top:18px;height:6px">
+              <sc-for list="{{ todaySegs }}" as="s" hint-placeholder-count="5"><div style="flex:1;border-radius:3px;transition:background .3s;background:{{ s.bg }}"></div></sc-for>
+            </div>
+            <div style="font:400 13px 'Geist',sans-serif;color:var(--mute);margin-top:8px">{{ todaySub }}</div>
+          </div>
+
+          <sc-if value="{{ hasNow }}">
+            <div onClick="{{ now.open }}" style="background:var(--sig);color:#0F0F12;border-radius:26px;padding:20px;cursor:pointer;display:flex;flex-direction:column;gap:14px;margin-bottom:24px">
+              <div style="display:flex;align-items:center;justify-content:space-between">
+                <span style="font:600 12px 'Geist Mono',monospace;letter-spacing:.08em">NOW DOING</span>
+                <span style="font:600 12px 'Geist Mono',monospace;padding:4px 8px;border-radius:8px;background:{{ now.c }};color:{{ now.on }}">{{ now.pl }} · {{ now.type }}</span>
+              </div>
+              <div style="font:600 22px/1.15 'Geist',sans-serif;letter-spacing:-.02em;text-wrap:pretty">{{ now.title }}</div>
+              <div style="display:flex;align-items:center;justify-content:space-between;gap:12px">
+                <div style="display:flex;flex-direction:column;gap:6px;flex:1">
+                  <span style="font:500 12px 'Geist Mono',monospace">{{ now.subTxt }} checklist · PR {{ now.pr }}</span>
+                  <div style="height:4px;border-radius:2px;background:rgba(15,15,18,.15)"><div style="height:100%;border-radius:2px;background:#0F0F12;width:{{ now.subPct }}"></div></div>
+                </div>
+                <button onClick="{{ now.focus }}" style="border:none;height:48px;padding:0 18px;border-radius:24px;background:#0F0F12;color:var(--sig);font:600 14px 'Geist',sans-serif;cursor:pointer;display:flex;align-items:center;gap:8px"><svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M7 4.5v15l13-7.5z"></path></svg>Focus</button>
+              </div>
+            </div>
+          </sc-if>
+
+          <div style="display:flex;justify-content:space-between;align-items:baseline;padding:0 4px 10px">
+            <span style="font:600 15px 'Geist',sans-serif;color:var(--ink)">Due today</span>
+            <span style="font:500 13px 'Geist Mono',monospace;color:var(--mute)">{{ todayLeftN }}</span>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:8px">
+            <sc-for list="{{ todayList }}" as="t" hint-placeholder-count="4">
+              <div onClick="{{ t.open }}" style="display:flex;gap:14px;align-items:flex-start;padding:16px;background:var(--surf);border-radius:20px;cursor:pointer;transition:opacity .3s;opacity:{{ t.op }}">
+                <button onClick="{{ t.toggle }}" aria-label="Complete" style="width:26px;height:26px;border-radius:13px;flex:none;padding:0;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:background .2s;border:2.5px solid {{ t.c }};background:{{ t.checkBg }};color:{{ t.on }}">
+                  <sc-if value="{{ t.done }}"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"></path></svg></sc-if>
+                </button>
+                <div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:8px">
+                  <div style="font:500 15px/1.3 'Geist',sans-serif;color:var(--ink);text-wrap:pretty;text-decoration:{{ t.deco }}">{{ t.title }}</div>
+                  <div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center;font:500 12px 'Geist Mono',monospace;color:var(--mute)">
+                    <span style="padding:3px 7px;border-radius:7px;background:{{ t.c }};color:{{ t.on }}">{{ t.pl }}</span>
+                    <span style="padding:3px 7px;border-radius:7px;background:var(--surf2);color:var(--ink)">{{ t.type }}</span>
+                    <sc-if value="{{ t.hasSubs }}"><span>☐ {{ t.subTxt }}</span></sc-if>
+                    <sc-if value="{{ t.hasPr }}"><span>PR {{ t.pr }}</span></sc-if>
+                  </div>
+                </div>
+              </div>
+            </sc-for>
+          </div>
+
+          <div style="display:flex;justify-content:space-between;align-items:baseline;padding:24px 4px 10px">
+            <span style="font:600 15px 'Geist',sans-serif;color:var(--ink)">Coming up</span>
+            <button onClick="{{ goBoard }}" style="border:none;background:none;font:500 13px 'Geist',sans-serif;color:var(--mute);cursor:pointer;padding:8px 0">Board →</button>
+          </div>
+          <div style="background:var(--surf);border-radius:20px;overflow:hidden">
+            <sc-for list="{{ upcoming }}" as="t" hint-placeholder-count="3">
+              <div onClick="{{ t.open }}" style="display:flex;align-items:center;gap:12px;padding:14px 16px;border-bottom:1px solid var(--line);cursor:pointer">
+                <span style="width:10px;height:10px;border-radius:5px;flex:none;background:{{ t.c }}"></span>
+                <span style="flex:1;min-width:0;font:500 14px 'Geist',sans-serif;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ t.title }}</span>
+                <span style="font:500 12px 'Geist Mono',monospace;color:var(--mute)">{{ t.due }}</span>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+      </sc-if>
+
+      <!-- BOARD -->
+      <sc-if value="{{ isBoard }}">
+        <div style="flex:1;display:flex;flex-direction:column;min-height:0">
+          <div style="padding:8px 20px 0;display:flex;align-items:center;justify-content:space-between;height:48px">
+            <span style="font:600 28px 'Geist',sans-serif;letter-spacing:-.03em;color:var(--ink)">Board</span>
+            <span style="font:500 13px 'Geist Mono',monospace;color:var(--mute);white-space:nowrap">{{ openCount }}</span>
+          </div>
+          <div style="display:flex;gap:6px;padding:14px 16px 12px">
+            <sc-for list="{{ colTabs }}" as="c" hint-placeholder-count="3">
+              <button onClick="{{ c.onClick }}" style="flex:1;height:44px;border:none;border-radius:22px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;font:600 14px 'Geist',sans-serif;transition:all .2s;background:{{ c.bg }};color:{{ c.fg }}">{{ c.name }}<span style="font:500 12px 'Geist Mono',monospace;opacity:.7">{{ c.n }}</span></button>
+            </sc-for>
+          </div>
+          <div style="flex:1;overflow:auto;padding:0 16px 110px;display:flex;flex-direction:column;gap:10px">
+            <sc-for list="{{ colItems }}" as="t" hint-placeholder-count="4">
+              <div onClick="{{ t.open }}" style="background:var(--surf);border-radius:22px;padding:16px;cursor:pointer;display:flex;flex-direction:column;gap:12px;position:relative;overflow:hidden">
+                <div style="display:flex;align-items:center;gap:8px">
+                  <span style="font:600 12px 'Geist Mono',monospace;padding:4px 8px;border-radius:8px;background:{{ t.c }};color:{{ t.on }}">{{ t.pl }} {{ t.pn }}</span>
+                  <span style="font:500 12px 'Geist Mono',monospace;color:var(--mute);flex:1">{{ t.key }}</span>
+                  <span style="font:500 12px 'Geist Mono',monospace;color:var(--mute)">{{ t.due }}</span>
+                </div>
+                <div style="font:500 16px/1.3 'Geist',sans-serif;color:var(--ink);text-wrap:pretty;text-decoration:{{ t.deco }}">{{ t.title }}</div>
+                <div style="display:flex;align-items:center;gap:10px;font:500 12px 'Geist Mono',monospace;color:var(--mute)">
+                  <span style="padding:3px 7px;border-radius:7px;background:var(--surf2);color:var(--ink)">{{ t.type }}</span>
+                  <sc-if value="{{ t.hasSubs }}">
+                    <span style="display:flex;align-items:center;gap:6px"><span style="width:36px;height:4px;border-radius:2px;background:var(--surf2);overflow:hidden;display:block"><span style="display:block;height:100%;background:{{ t.c }};width:{{ t.subPct }}"></span></span>{{ t.subTxt }}</span>
+                  </sc-if>
+                  <sc-if value="{{ t.hasPr }}"><span>PR {{ t.pr }}</span></sc-if>
+                  <span style="flex:1"></span>
+                  <button onClick="{{ t.advance }}" aria-label="Move" style="height:32px;padding:0 12px;border-radius:16px;border:1px solid var(--line);background:transparent;color:var(--ink);font:600 12px 'Geist',sans-serif;cursor:pointer;white-space:nowrap;flex:none">{{ t.advLabel }}</button>
+                </div>
+              </div>
+            </sc-for>
+            <sc-if value="{{ colEmpty }}">
+              <div style="padding:60px 20px;text-align:center;font:400 14px 'Geist',sans-serif;color:var(--mute)">Nothing here. Enjoy it.</div>
+            </sc-if>
+          </div>
+        </div>
+      </sc-if>
+
+      <!-- SEARCH -->
+      <sc-if value="{{ isSearch }}">
+        <div style="flex:1;display:flex;flex-direction:column;min-height:0">
+          <div style="padding:16px 16px 8px">
+            <div style="display:flex;align-items:center;gap:10px;height:52px;padding:0 16px;border-radius:26px;background:var(--surf);color:var(--mute)">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="6.5"></circle><path d="M20 20l-4-4"></path></svg>
+              <input value="{{ q }}" onChange="{{ onQ }}" placeholder="Search tasks, BX-ids, PRs" style="flex:1;border:none;outline:none;background:transparent;font:400 16px 'Geist',sans-serif;color:var(--ink);min-width:0">
+              <sc-if value="{{ hasQ }}"><button onClick="{{ clearQ }}" aria-label="Clear" style="border:none;background:none;color:var(--mute);cursor:pointer;padding:8px;display:flex"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"></path></svg></button></sc-if>
+            </div>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:10px;padding:8px 16px 12px">
+            <div style="display:flex;gap:6px">
+              <sc-for list="{{ priFilters }}" as="p" hint-placeholder-count="4">
+                <button onClick="{{ p.onClick }}" style="flex:1;height:40px;border-radius:20px;cursor:pointer;font:600 13px 'Geist Mono',monospace;transition:all .2s;border:2px solid {{ p.c }};background:{{ p.bg }};color:{{ p.fg }}">{{ p.label }}</button>
+              </sc-for>
+            </div>
+            <div style="display:flex;gap:6px;overflow-x:auto;margin:0 -16px;padding:0 16px">
+              <sc-for list="{{ typeFilters }}" as="f" hint-placeholder-count="6">
+                <button onClick="{{ f.onClick }}" style="flex:none;height:36px;padding:0 14px;border:none;border-radius:18px;cursor:pointer;font:500 13px 'Geist',sans-serif;background:{{ f.bg }};color:{{ f.fg }}">{{ f.label }}</button>
+              </sc-for>
+            </div>
+            <div style="display:flex;gap:4px;padding:4px;border-radius:14px;background:var(--surf)">
+              <sc-for list="{{ statusFilters }}" as="f" hint-placeholder-count="4">
+                <button onClick="{{ f.onClick }}" style="flex:1;height:36px;border:none;border-radius:10px;cursor:pointer;font:500 13px 'Geist',sans-serif;background:{{ f.bg }};color:{{ f.fg }}">{{ f.label }}</button>
+              </sc-for>
+            </div>
+          </div>
+          <div style="padding:4px 20px 8px;font:500 12px 'Geist Mono',monospace;color:var(--mute)">{{ resultsLabel }}</div>
+          <div style="flex:1;overflow:auto;padding:0 16px 110px;display:flex;flex-direction:column;gap:8px">
+            <sc-for list="{{ results }}" as="t" hint-placeholder-count="5">
+              <div onClick="{{ t.open }}" style="display:flex;align-items:center;gap:12px;padding:14px 16px;background:var(--surf);border-radius:18px;cursor:pointer">
+                <span style="width:4px;align-self:stretch;border-radius:2px;flex:none;background:{{ t.c }}"></span>
+                <div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:4px">
+                  <span style="font:500 14px/1.3 'Geist',sans-serif;color:var(--ink);text-decoration:{{ t.deco }}">{{ t.title }}</span>
+                  <span style="font:500 12px 'Geist Mono',monospace;color:var(--mute)">{{ t.key }} · {{ t.type }} · {{ t.statusName }}</span>
+                </div>
+                <span style="font:600 12px 'Geist Mono',monospace;color:var(--mute)">{{ t.pl }}</span>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+      </sc-if>
+
+      <!-- REVIEW -->
+      <sc-if value="{{ isReview }}">
+        <div style="flex:1;overflow:auto;padding:8px 16px 110px">
+          <div style="padding:8px 4px 20px">
+            <div style="font:500 14px 'Geist Mono',monospace;color:var(--mute)">WEEK 45 · NOV 2–8</div>
+            <div style="font:600 28px 'Geist',sans-serif;letter-spacing:-.03em;color:var(--ink);margin-top:6px">Weekly review</div>
+          </div>
+          <div style="background:var(--ink);color:var(--bg);border-radius:26px;padding:22px;display:flex;flex-direction:column;gap:20px">
+            <div style="display:flex;align-items:flex-end;justify-content:space-between">
+              <div>
+                <div style="font:700 72px/0.85 'Geist',sans-serif;letter-spacing:-.05em">{{ doneCount }}</div>
+                <div style="font:500 14px 'Geist',sans-serif;margin-top:10px;opacity:.7">tasks shipped</div>
+              </div>
+              <span style="font:600 13px 'Geist Mono',monospace;padding:6px 10px;border-radius:10px;background:var(--sig);color:#0F0F12">+3 vs wk 44</span>
+            </div>
+            <div style="display:flex;align-items:flex-end;gap:8px;height:96px">
+              <sc-for list="{{ week }}" as="d" hint-placeholder-count="7">
+                <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:8px;height:100%;justify-content:flex-end">
+                  <div style="width:100%;border-radius:8px;height:{{ d.h }};background:{{ d.bg }}"></div>
+                  <span style="font:500 11px 'Geist Mono',monospace;opacity:.6">{{ d.l }}</span>
+                </div>
+              </sc-for>
+            </div>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px">
+            <div style="background:var(--surf);border-radius:20px;padding:16px;display:flex;flex-direction:column;gap:6px">
+              <span style="font:600 26px 'Geist',sans-serif;letter-spacing:-.03em;color:var(--ink)">{{ focusTime }}</span>
+              <span style="font:400 13px 'Geist',sans-serif;color:var(--mute)">in focus mode</span>
+            </div>
+            <div style="background:var(--surf);border-radius:20px;padding:16px;display:flex;flex-direction:column;gap:6px">
+              <span style="font:600 26px 'Geist',sans-serif;letter-spacing:-.03em;color:var(--ink)">{{ bugsClosed }}</span>
+              <span style="font:400 13px 'Geist',sans-serif;color:var(--mute)">bugs closed</span>
+            </div>
+          </div>
+          <div style="background:var(--surf);border-radius:20px;padding:18px 16px;margin-top:8px;display:flex;flex-direction:column;gap:14px">
+            <span style="font:600 15px 'Geist',sans-serif;color:var(--ink)">Shipped by priority</span>
+            <div style="display:flex;gap:3px;height:14px">
+              <sc-for list="{{ priMix }}" as="p" hint-placeholder-count="4"><div style="border-radius:4px;flex:{{ p.n }};background:{{ p.c }}"></div></sc-for>
+            </div>
+            <div style="display:flex;gap:14px;flex-wrap:wrap">
+              <sc-for list="{{ priMix }}" as="p" hint-placeholder-count="4">
+                <span style="display:flex;align-items:center;gap:6px;font:500 12px 'Geist Mono',monospace;color:var(--mute)"><span style="width:8px;height:8px;border-radius:4px;background:{{ p.c }}"></span>{{ p.label }} · {{ p.n }}</span>
+              </sc-for>
+            </div>
+          </div>
+          <div style="display:flex;justify-content:space-between;align-items:baseline;padding:24px 4px 10px">
+            <span style="font:600 15px 'Geist',sans-serif;color:var(--ink)">Shipped</span>
+          </div>
+          <div style="background:var(--surf);border-radius:20px;overflow:hidden">
+            <sc-for list="{{ doneList }}" as="t" hint-placeholder-count="4">
+              <div onClick="{{ t.open }}" style="display:flex;align-items:center;gap:12px;padding:14px 16px;border-bottom:1px solid var(--line);cursor:pointer">
+                <span style="width:20px;height:20px;border-radius:10px;flex:none;display:flex;align-items:center;justify-content:center;background:{{ t.c }};color:{{ t.on }}"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"></path></svg></span>
+                <span style="flex:1;min-width:0;font:500 14px 'Geist',sans-serif;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ t.title }}</span>
+                <span style="font:500 12px 'Geist Mono',monospace;color:var(--mute)">{{ t.due }}</span>
+              </div>
+            </sc-for>
+          </div>
+          <div style="display:flex;align-items:center;gap:12px;margin-top:8px;padding:16px;border-radius:20px;border:1.5px dashed var(--line)">
+            <span style="flex:1;font:400 14px/1.4 'Geist',sans-serif;color:var(--mute)"><span style="color:var(--ink);font-weight:600">{{ carryN }} open tasks</span> roll into week 46.</span>
+            <button onClick="{{ goBoard }}" style="border:none;height:40px;padding:0 16px;border-radius:20px;background:var(--surf2);color:var(--ink);font:600 13px 'Geist',sans-serif;cursor:pointer">Plan</button>
+          </div>
+        </div>
+      </sc-if>
+
+      <!-- DETAIL -->
+      <sc-if value="{{ isDetail }}">
+        <div style="flex:1;overflow:auto;padding-bottom:100px">
+          <div style="padding:4px 16px 26px;transition:background .25s;background:{{ d.c }};color:{{ d.on }}">
+            <div style="display:flex;align-items:center;justify-content:space-between;height:52px">
+              <button onClick="{{ back }}" aria-label="Back" style="width:44px;height:44px;margin-left:-10px;border:none;background:none;color:inherit;cursor:pointer;display:flex;align-items:center;justify-content:center"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"></path></svg></button>
+              <span style="font:500 13px 'Geist Mono',monospace;opacity:.85;white-space:nowrap">{{ d.key }}</span>
+            </div>
+            <div style="font:600 12px 'Geist Mono',monospace;letter-spacing:.08em;opacity:.85;margin-top:6px">{{ d.pl }} {{ d.pn }} · {{ d.type }}</div>
+            <div style="font:600 27px/1.12 'Geist',sans-serif;letter-spacing:-.025em;margin-top:10px;text-wrap:pretty">{{ d.title }}</div>
+            <div style="font:500 13px 'Geist Mono',monospace;margin-top:14px;opacity:.85">Due {{ d.due }}</div>
+          </div>
+          <div style="padding:12px 16px;display:flex;flex-direction:column;gap:8px">
+            <div style="background:var(--surf);border-radius:20px;padding:14px;display:flex;flex-direction:column;gap:12px">
+              <span style="font:500 12px 'Geist Mono',monospace;color:var(--mute);padding-left:4px">STATUS</span>
+              <div style="display:flex;gap:4px;padding:4px;border-radius:14px;background:var(--surf2)">
+                <sc-for list="{{ statusOpts }}" as="s" hint-placeholder-count="3">
+                  <button onClick="{{ s.onClick }}" style="flex:1;height:40px;border:none;border-radius:10px;cursor:pointer;font:600 14px 'Geist',sans-serif;transition:all .2s;background:{{ s.bg }};color:{{ s.fg }}">{{ s.label }}</button>
+                </sc-for>
+              </div>
+              <span style="font:500 12px 'Geist Mono',monospace;color:var(--mute);padding:4px 0 0 4px">PRIORITY</span>
+              <div style="display:flex;gap:6px">
+                <sc-for list="{{ priOpts }}" as="p" hint-placeholder-count="4">
+                  <button onClick="{{ p.onClick }}" style="flex:1;height:44px;border-radius:14px;cursor:pointer;font:600 13px 'Geist Mono',monospace;transition:all .2s;border:2px solid {{ p.c }};background:{{ p.bg }};color:{{ p.fg }}">{{ p.label }}</button>
+                </sc-for>
+              </div>
+            </div>
+
+            <div style="background:var(--surf);border-radius:20px;padding:14px 14px 8px;display:flex;flex-direction:column;gap:4px">
+              <div style="display:flex;justify-content:space-between;align-items:center;padding:0 4px 8px">
+                <span style="font:500 12px 'Geist Mono',monospace;color:var(--mute)">CHECKLIST</span>
+                <span style="font:500 12px 'Geist Mono',monospace;color:var(--mute)">{{ d.subTxt }}</span>
+              </div>
+              <sc-for list="{{ subRows }}" as="s" hint-placeholder-count="3">
+                <button onClick="{{ s.toggle }}" style="display:flex;align-items:center;gap:12px;min-height:44px;padding:0 4px;border:none;background:none;cursor:pointer;text-align:left;font:inherit">
+                  <span style="width:22px;height:22px;border-radius:7px;flex:none;display:flex;align-items:center;justify-content:center;transition:background .2s;border:2px solid {{ d.c }};background:{{ s.bg }};color:{{ d.on }}"><sc-if value="{{ s.d }}"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"></path></svg></sc-if></span>
+                  <span style="font:400 15px 'Geist',sans-serif;color:var(--ink);text-decoration:{{ s.deco }};opacity:{{ s.op }}">{{ s.t }}</span>
+                </button>
+              </sc-for>
+              <div style="display:flex;align-items:center;gap:12px;min-height:44px;padding:0 4px">
+                <span style="width:22px;height:22px;flex:none;display:flex;align-items:center;justify-content:center;color:var(--mute)"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M12 5v14M5 12h14"></path></svg></span>
+                <input value="{{ newSub }}" onChange="{{ onNewSub }}" onKeyDown="{{ onSubKey }}" placeholder="Add step, press Enter" style="flex:1;border:none;outline:none;background:transparent;font:400 15px 'Geist',sans-serif;color:var(--ink);min-width:0">
+              </div>
+            </div>
+
+            <div style="background:var(--surf);border-radius:20px;padding:16px;display:flex;align-items:center;gap:14px">
+              <span style="width:44px;height:44px;border-radius:14px;flex:none;background:var(--surf2);color:var(--ink);display:flex;align-items:center;justify-content:center"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="6" cy="5" r="2"></circle><circle cx="6" cy="19" r="2"></circle><circle cx="18" cy="19" r="2"></circle><path d="M6 7v10M18 17V9a3 3 0 00-3-3h-4"></path><path d="M13 3.5L10.5 6 13 8.5"></path></svg></span>
+              <sc-if value="{{ d.hasPr }}">
+                <div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:3px">
+                  <span style="font:600 15px 'Geist',sans-serif;color:var(--ink)">PR {{ d.pr }}</span>
+                  <span style="font:400 12px 'Geist Mono',monospace;color:var(--mute);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ d.branch }}</span>
+                </div>
+                <span style="font:600 12px 'Geist Mono',monospace;padding:5px 9px;border-radius:8px;background:{{ d.prBg }};color:{{ d.prFg }}">{{ d.prState }}</span>
+              </sc-if>
+              <sc-if value="{{ d.noPr }}">
+                <span style="flex:1;font:500 15px 'Geist',sans-serif;color:var(--mute)">No pull request</span>
+                <button onClick="{{ linkPr }}" style="border:none;height:40px;padding:0 16px;border-radius:20px;background:var(--ink);color:var(--bg);font:600 13px 'Geist',sans-serif;cursor:pointer">Link PR</button>
+              </sc-if>
+            </div>
+
+            <sc-if value="{{ d.shot }}">
+              <div style="background:var(--surf);border-radius:20px;padding:14px;display:flex;flex-direction:column;gap:10px">
+                <span style="font:500 12px 'Geist Mono',monospace;color:var(--mute);padding-left:4px">BUG SCREENSHOT</span>
+                <div style="height:150px;border-radius:14px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;color:var(--mute);background:repeating-linear-gradient(135deg,var(--surf2) 0 10px,transparent 10px 20px);border:1px solid var(--line)">
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"></rect><circle cx="9" cy="10" r="2"></circle><path d="M21 16l-5-5-9 9"></path></svg>
+                  <span style="font:500 12px 'Geist Mono',monospace">checkout-error.png</span>
+                </div>
+              </div>
+            </sc-if>
+
+            <sc-if value="{{ d.hasFrom }}">
+              <div style="background:var(--surf);border-radius:20px;padding:16px;display:flex;align-items:center;gap:14px">
+                <span style="width:44px;height:44px;border-radius:22px;flex:none;background:var(--sig);color:#0F0F12;display:flex;align-items:center;justify-content:center;font:600 15px 'Geist',sans-serif">{{ d.fromInitial }}</span>
+                <div style="display:flex;flex-direction:column;gap:3px"><span style="font:500 12px 'Geist Mono',monospace;color:var(--mute)">REQUESTED BY</span><span style="font:600 15px 'Geist',sans-serif;color:var(--ink)">{{ d.from }}</span></div>
+              </div>
+            </sc-if>
+          </div>
+        </div>
+        <div style="position:absolute;left:0;right:0;bottom:0;padding:12px 16px 16px;background:linear-gradient(transparent,var(--bg) 30%)">
+          <button onClick="{{ d.focus }}" style="width:100%;height:56px;border:none;border-radius:28px;background:var(--ink);color:var(--bg);font:600 16px 'Geist',sans-serif;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:10px"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M13 2L4 14h7l-1 8 9-12h-7z"></path></svg>Start focus session</button>
+        </div>
+      </sc-if>
+
+      <!-- FOCUS -->
+      <sc-if value="{{ isFocus }}">
+        <div style="flex:1;display:flex;flex-direction:column;background:#0B0B0E;color:#F4F3F8;padding:8px 20px 28px">
+          <div style="display:flex;align-items:center;justify-content:space-between;height:52px">
+            <button onClick="{{ back }}" aria-label="Close" style="width:44px;height:44px;margin-left:-10px;border:none;background:none;color:inherit;cursor:pointer;display:flex;align-items:center;justify-content:center"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"></path></svg></button>
+            <span style="font:600 12px 'Geist Mono',monospace;letter-spacing:.08em;color:#8E8D99">FOCUS · {{ f.key }}</span>
+            <span style="width:44px"></span>
+          </div>
+          <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:30px">
+            <div style="position:relative;width:260px;height:260px">
+              <svg width="260" height="260" viewBox="0 0 260 260" style="transform:rotate(-90deg)"><circle cx="130" cy="130" r="120" fill="none" stroke="#1F1F26" stroke-width="10"></circle><circle cx="130" cy="130" r="120" fill="none" stroke="{{ f.c }}" stroke-width="10" stroke-linecap="round" stroke-dasharray="753.98" stroke-dashoffset="{{ ringOff }}" style="transition:stroke-dashoffset 1s linear"></circle></svg>
+              <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px">
+                <span style="font:600 60px 'Geist Mono',monospace;letter-spacing:-.04em">{{ clock }}</span>
+                <span style="font:500 12px 'Geist Mono',monospace;color:#8E8D99">{{ focusState }}</span>
+              </div>
+            </div>
+            <div style="font:600 22px/1.2 'Geist',sans-serif;letter-spacing:-.02em;text-align:center;text-wrap:pretty;max-width:320px">{{ f.title }}</div>
+            <sc-if value="{{ f.nextSub }}">
+              <div style="display:flex;align-items:center;gap:10px;padding:12px 16px;border-radius:16px;background:#16161C;font:400 14px 'Geist',sans-serif;max-width:320px"><span style="font:600 11px 'Geist Mono',monospace;color:{{ f.c }}">NEXT</span>{{ f.nextSub }}</div>
+            </sc-if>
+          </div>
+          <div style="display:flex;gap:10px">
+            <button onClick="{{ toggleRun }}" style="flex:1;height:60px;border:none;border-radius:30px;background:#1F1F26;color:#F4F3F8;font:600 16px 'Geist',sans-serif;cursor:pointer">{{ runLabel }}</button>
+            <button onClick="{{ f.complete }}" style="flex:1;height:60px;border:none;border-radius:30px;font:600 16px 'Geist',sans-serif;cursor:pointer;background:{{ f.c }};color:{{ f.on }}">Mark done</button>
+          </div>
+        </div>
+      </sc-if>
+
+      <!-- BOTTOM NAV -->
+      <sc-if value="{{ showNav }}">
+        <div style="position:absolute;left:12px;right:12px;bottom:calc(12px + env(safe-area-inset-bottom));height:68px;border-radius:34px;background:var(--surf);box-shadow:0 10px 30px rgba(0,0,0,.12),0 0 0 1px var(--line);display:flex;align-items:center;justify-content:space-around;padding:0 8px;z-index:20">
+          <button onClick="{{ goToday }}" aria-label="Today" style="width:52px;height:52px;border:none;border-radius:26px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .2s;background:{{ nav.today.bg }};color:{{ nav.today.fg }}"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4"></circle><path d="M12 2.5v2M12 19.5v2M2.5 12h2M19.5 12h2M5.3 5.3l1.4 1.4M17.3 17.3l1.4 1.4M5.3 18.7l1.4-1.4M17.3 6.7l1.4-1.4"></path></svg></button>
+          <button onClick="{{ goBoard }}" aria-label="Board" style="width:52px;height:52px;border:none;border-radius:26px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .2s;background:{{ nav.board.bg }};color:{{ nav.board.fg }}"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><rect x="3" y="4" width="5" height="16" rx="1.5"></rect><rect x="10" y="4" width="5" height="11" rx="1.5"></rect><rect x="17" y="4" width="4" height="7" rx="1.5"></rect></svg></button>
+          <button onClick="{{ openSheet }}" aria-label="Quick add" style="width:56px;height:56px;border:none;border-radius:28px;cursor:pointer;display:flex;align-items:center;justify-content:center;background:var(--sig);color:#0F0F12;box-shadow:0 6px 16px rgba(0,0,0,.18)"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M12 5v14M5 12h14"></path></svg></button>
+          <button onClick="{{ goReview }}" aria-label="Review" style="width:52px;height:52px;border:none;border-radius:26px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .2s;background:{{ nav.review.bg }};color:{{ nav.review.fg }}"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M5 20v-8M12 20V5M19 20v-5"></path></svg></button>
+          <button onClick="{{ goSearch }}" aria-label="Search" style="width:52px;height:52px;border:none;border-radius:26px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .2s;background:{{ nav.search.bg }};color:{{ nav.search.fg }}"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="6.5"></circle><path d="M20 20l-4-4"></path></svg></button>
+        </div>
+      </sc-if>
+
+      <!-- QUICK ADD SHEET -->
+      <div style="position:absolute;inset:0;z-index:40;pointer-events:{{ sheetPE }}">
+        <div onClick="{{ closeSheet }}" style="position:absolute;inset:0;background:rgba(0,0,0,.45);transition:opacity .25s;opacity:{{ sheetOp }}"></div>
+        <div style="position:absolute;left:0;right:0;bottom:0;background:var(--surf);border-radius:28px 28px 0 0;padding:10px 16px 20px;display:flex;flex-direction:column;gap:14px;transition:transform .3s cubic-bezier(.2,.8,.2,1);transform:{{ sheetTf }}">
+          <div style="width:36px;height:4px;border-radius:2px;background:var(--line);align-self:center;margin-bottom:4px"></div>
+          <div style="display:flex;align-items:flex-start;gap:12px">
+            <span style="width:12px;height:12px;border-radius:6px;margin-top:9px;flex:none;transition:background .2s;background:{{ pv.c }}"></span>
+            <textarea ref="{{ inputRef }}" value="{{ draft }}" onChange="{{ onDraft }}" onKeyDown="{{ onDraftKey }}" rows="2" placeholder="What needs doing?" style="flex:1;border:none;outline:none;resize:none;background:transparent;font:500 20px/1.35 'Geist',sans-serif;color:var(--ink);min-width:0"></textarea>
+          </div>
+          <div style="font:400 12px 'Geist Mono',monospace;color:var(--mute);padding-left:24px">Shortcuts: !p0–!p3 · #bug #ops #infra…</div>
+          <div style="display:flex;gap:6px">
+            <sc-for list="{{ sheetPri }}" as="p" hint-placeholder-count="4">
+              <button onClick="{{ p.onClick }}" style="flex:1;height:44px;border-radius:14px;cursor:pointer;font:600 13px 'Geist Mono',monospace;transition:all .2s;border:2px solid {{ p.c }};background:{{ p.bg }};color:{{ p.fg }}">{{ p.label }}</button>
+            </sc-for>
+          </div>
+          <div style="display:flex;gap:6px;overflow-x:auto;margin:0 -16px;padding:0 16px">
+            <sc-for list="{{ sheetTypes }}" as="f" hint-placeholder-count="7">
+              <button onClick="{{ f.onClick }}" style="flex:none;height:36px;padding:0 14px;border:none;border-radius:18px;cursor:pointer;font:500 13px 'Geist',sans-serif;background:{{ f.bg }};color:{{ f.fg }}">{{ f.label }}</button>
+            </sc-for>
+          </div>
+          <div style="display:flex;gap:8px;align-items:center">
+            <sc-for list="{{ sheetDue }}" as="f" hint-placeholder-count="3">
+              <button onClick="{{ f.onClick }}" style="height:36px;padding:0 12px;border-radius:10px;cursor:pointer;font:500 12px 'Geist Mono',monospace;border:1px solid var(--line);background:{{ f.bg }};color:{{ f.fg }}">{{ f.label }}</button>
+            </sc-for>
+            <span style="flex:1"></span>
+            <button onClick="{{ addTask }}" style="height:48px;padding:0 22px;border:none;border-radius:24px;font:600 15px 'Geist',sans-serif;cursor:pointer;transition:opacity .2s;background:var(--ink);color:var(--bg);opacity:{{ addOp }}">Add</button>
+          </div>
+        </div>
+      </div>
+
+      <sc-if value="{{ hasToast }}">
+        <div style="position:absolute;left:24px;right:24px;bottom:calc(96px + env(safe-area-inset-bottom));z-index:30;padding:14px 18px;border-radius:16px;background:var(--ink);color:var(--bg);font:500 14px 'Geist',sans-serif;display:flex;justify-content:space-between;align-items:center"><span>{{ toast }}</span><span style="font:500 12px 'Geist Mono',monospace;opacity:.7">BGDX</span></div>
+      </sc-if>
+    </div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;theme&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;Light&quot;,&quot;Dark&quot;],&quot;default&quot;:&quot;Light&quot;,&quot;tsType&quot;:&quot;string&quot;},&quot;signature&quot;:{&quot;editor&quot;:&quot;color&quot;,&quot;options&quot;:[&quot;#C8FF2E&quot;,&quot;#00E0FF&quot;,&quot;#FF5CF0&quot;,&quot;#FFE14D&quot;],&quot;default&quot;:&quot;#C8FF2E&quot;,&quot;tsType&quot;:&quot;string&quot;},&quot;startScreen&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;Onboarding&quot;,&quot;Today&quot;],&quot;default&quot;:&quot;Onboarding&quot;,&quot;tsType&quot;:&quot;string&quot;}}">
+class Component extends DCLogic {
+  PRI = [
+    { label: 'P0', name: 'Urgent', c: '#FF2E63', on: '#FFFFFF', hint: 'Store is bleeding' },
+    { label: 'P1', name: 'High', c: '#FF8A00', on: '#1F1100', hint: 'This week' },
+    { label: 'P2', name: 'Medium', c: '#6B4BFF', on: '#FFFFFF', hint: 'Soon' },
+    { label: 'P3', name: 'Low', c: '#12C79A', on: '#002A1F', hint: 'Someday' },
+  ];
+  TYPES = ['Feature', 'Bug', 'Ops', 'Integration', 'Request', 'Infra', 'Idea'];
+  STATUS = [{ k: 'todo', label: 'To do' }, { k: 'doing', label: 'Doing' }, { k: 'done', label: 'Done' }];
+  inputRef = React.createRef();
+  state = {
+    screen: (this.props.startScreen ?? 'Onboarding') === 'Onboarding' ? 'onboard' : 'today',
+    prev: 'today', dark: (this.props.theme ?? 'Light') === 'Dark', tasks: this.seed(), sel: 14,
+    sheet: false, draft: '', dPri: 2, dType: 'Feature', dDue: 'Today',
+    q: '', fPri: [], fType: null, fStatus: 'all', col: 'doing', obStep: 0, gh: false,
+    focusId: 14, secs: 1500, running: false, newSub: '', toast: null, nextId: 22,
+  };
+  seed() {
+    return [
+      { id: 14, title: 'bKash checkout fails for orders above ৳10,000', type: 'Bug', pri: 0, status: 'doing', due: 'Today', pr: '#218', branch: 'fix/bkash-amount-cap', prOpen: true, shot: true, subs: [{ t: 'Reproduce on staging', d: true }, { t: 'Check gateway amount cap', d: true }, { t: 'Patch validation + add test', d: false }] },
+      { id: 21, title: '11.11 flash sale banner + countdown', type: 'Request', pri: 0, status: 'todo', due: 'Today', from: 'Rafi · CEO', subs: [{ t: 'Get final creative', d: true }, { t: 'Countdown component', d: false }, { t: 'Schedule go-live 11 Nov 00:00', d: false }] },
+      { id: 17, title: 'Inventory off by 3 units in Warehouse B', type: 'Ops', pri: 1, status: 'todo', due: 'Today', from: 'Nadia · Ops', subs: [] },
+      { id: 16, title: 'Product images slow on 3G', type: 'Bug', pri: 1, status: 'todo', due: 'Today', shot: true, subs: [{ t: 'Serve WebP via CDN', d: false }, { t: 'Lazy-load below fold', d: false }] },
+      { id: 19, title: 'Pathao courier live tracking', type: 'Integration', pri: 1, status: 'doing', due: 'Tomorrow', pr: '#214', branch: 'feat/pathao-tracking', prOpen: true, subs: [{ t: 'Sandbox API keys', d: true }, { t: 'Status webhook', d: true }, { t: 'Tracking page UI', d: false }, { t: 'SMS on dispatch', d: false }] },
+      { id: 12, title: 'Nightly Postgres backups to S3', type: 'Infra', pri: 2, status: 'todo', due: 'Mon', subs: [] },
+      { id: 11, title: 'Abandoned cart reminder emails', type: 'Feature', pri: 2, status: 'todo', due: 'Nov 12', subs: [] },
+      { id: 9, title: 'Upgrade Node 18 → 22', type: 'Infra', pri: 3, status: 'todo', due: 'Nov 20', subs: [] },
+      { id: 8, title: 'Shareable wishlists', type: 'Idea', pri: 3, status: 'todo', due: 'Someday', subs: [] },
+      { id: 7, title: 'Fix coupon stacking exploit', type: 'Bug', pri: 0, status: 'done', due: 'Today', pr: '#211', branch: 'fix/coupon-stack', subs: [] },
+      { id: 6, title: 'SSLCommerz refund webhook', type: 'Integration', pri: 1, status: 'done', due: 'Thu', pr: '#207', branch: 'feat/refund-hook', subs: [] },
+      { id: 5, title: 'Bangla invoice PDF', type: 'Feature', pri: 2, status: 'done', due: 'Wed', pr: '#203', branch: 'feat/invoice-bn', subs: [] },
+      { id: 4, title: 'Admin bulk price editor', type: 'Request', pri: 2, status: 'done', due: 'Tue', from: 'Nadia · Ops', pr: '#199', branch: 'feat/bulk-price', subs: [] },
+    ];
+  }
+  componentDidMount() {
+    this.onRz = () => this.forceUpdate(); window.addEventListener('resize', this.onRz);
+    const sa = matchMedia('(display-mode: standalone)').matches || navigator.standalone;
+    if (!sa && innerWidth < 600 && document.documentElement.requestFullscreen) {
+      this.fs = () => { document.documentElement.requestFullscreen({ navigationUI: 'hide' }).catch(() => {}); removeEventListener('click', this.fs); };
+      addEventListener('click', this.fs);
+    }
+    try {
+      const s = JSON.parse(localStorage.getItem('bgdx-v1') || 'null');
+      if (s && s.tasks) this.setState({ tasks: s.tasks, dark: s.dark, nextId: s.nextId || 22 });
+    } catch (e) {}
+    this.timer = setInterval(() => {
+      if (this.state.running && this.state.secs > 0) this.setState(s => ({ secs: s.secs - 1 }));
+    }, 1000);
+  }
+  componentWillUnmount() { window.removeEventListener('resize', this.onRz); clearInterval(this.timer); clearTimeout(this.tt); }
+  componentDidUpdate(pp, ps) {
+    const tc = document.querySelector('meta[name=theme-color]'); if (tc) tc.content = this.state.screen === 'focus' ? '#0B0B0E' : this.state.dark ? '#0B0B0E' : '#F4F3EF';
+    if (ps.tasks !== this.state.tasks || ps.dark !== this.state.dark)
+      localStorage.setItem('bgdx-v1', JSON.stringify({ tasks: this.state.tasks, dark: this.state.dark, nextId: this.state.nextId }));
+  }
+  flash(msg) { clearTimeout(this.tt); this.setState({ toast: msg }); this.tt = setTimeout(() => this.setState({ toast: null }), 1800); }
+  upd(id, fn) { this.setState(s => ({ tasks: s.tasks.map(t => t.id === id ? fn(t) : t) })); }
+  go(screen) { this.setState({ screen, sheet: false }); }
+  open(id) { this.setState(s => ({ sel: id, prev: s.screen === 'detail' ? s.prev : s.screen, screen: 'detail' })); }
+  focus(id) { this.setState(s => ({ focusId: id, prev: s.screen === 'focus' ? s.prev : s.screen, screen: 'focus', secs: 1500, running: true })); }
+  toggleDone(id) {
+    const t = this.state.tasks.find(x => x.id === id);
+    const done = t.status !== 'done';
+    this.upd(id, x => ({ ...x, status: done ? 'done' : 'todo' }));
+    if (done) this.flash('Shipped · ' + this.key(t));
+  }
+  key(t) { return 'BX-' + String(t.id).padStart(3, '0'); }
+  parse(d) {
+    let pri = this.state.dPri, type = this.state.dType, title = d;
+    const m = d.match(/!p?([0-3])\b/i);
+    if (m) { pri = +m[1]; title = title.replace(m[0], ''); }
+    const tm = d.match(/#(\w+)/);
+    if (tm) { const f = this.TYPES.find(x => x.toLowerCase().startsWith(tm[1].toLowerCase())); if (f) { type = f; title = title.replace(tm[0], ''); } }
+    return { title: title.replace(/\s+/g, ' ').trim(), pri, type };
+  }
+  addTask() {
+    const p = this.parse(this.state.draft);
+    if (!p.title) return;
+    const id = this.state.nextId;
+    this.setState(s => ({
+      tasks: [{ id, title: p.title, type: p.type, pri: p.pri, status: 'todo', due: s.dDue, subs: [] }, ...s.tasks],
+      nextId: id + 1, draft: '', sheet: false,
+    }));
+    this.flash('Added BX-' + String(id).padStart(3, '0'));
+  }
+  dec(t) {
+    const p = this.PRI[t.pri], done = t.status === 'done', sd = t.subs.filter(s => s.d).length, n = t.subs.length;
+    const si = this.STATUS.findIndex(s => s.k === t.status);
+    return {
+      ...t, key: this.key(t), c: p.c, on: p.on, pl: p.label, pn: p.name, done,
+      checkBg: done ? p.c : 'transparent', deco: done ? 'line-through' : 'none', op: done ? 0.5 : 1,
+      hasSubs: n > 0, subTxt: sd + '/' + n, subPct: n ? Math.round(sd / n * 100) + '%' : '0%',
+      hasPr: !!t.pr, noPr: !t.pr, hasFrom: !!t.from, fromInitial: (t.from || ' ')[0],
+      prState: t.status === 'done' ? 'Merged' : 'Open', prBg: t.status === 'done' ? '#6B4BFF' : '#12C79A', prFg: t.status === 'done' ? '#fff' : '#002A1F',
+      statusName: this.STATUS[si].label, shot: !!t.shot,
+      advLabel: si < 2 ? '→ ' + this.STATUS[si + 1].label : 'Reopen',
+      advance: e => { e.stopPropagation(); this.upd(t.id, x => ({ ...x, status: this.STATUS[(si + 1) % 3].k })); if (si === 1) this.flash('Shipped · ' + this.key(t)); },
+      open: () => this.open(t.id),
+      toggle: e => { e.stopPropagation(); this.toggleDone(t.id); },
+      focus: e => { if (e) e.stopPropagation(); this.focus(t.id); },
+    };
+  }
+  renderVals() {
+    const s = this.state, dark = s.dark, sig = this.props.signature ?? '#C8FF2E';
+    const sortP = (a, b) => a.pri - b.pri;
+    const T = s.tasks.map(t => this.dec(t));
+    const vars = dark
+      ? { '--bg': '#0B0B0E', '--surf': '#16161C', '--surf2': '#23232B', '--ink': '#F4F3F8', '--mute': '#8E8D99', '--line': 'rgba(255,255,255,.08)' }
+      : { '--bg': '#F4F3EF', '--surf': '#FFFFFF', '--surf2': '#ECEAE4', '--ink': '#0F0F12', '--mute': '#6A6971', '--line': 'rgba(15,15,18,.09)' };
+    const themeVars = { ...vars, '--sig': sig, height: '100%', position: 'relative', display: 'flex', flexDirection: 'column', background: 'var(--bg)', color: 'var(--ink)', fontFamily: "'Geist',system-ui,sans-serif", overflow: 'hidden', transition: 'background .25s' };
+    const bg = vars['--bg'];
+    const scr = s.screen;
+    const selT = T.find(t => t.id === s.sel) || T[0];
+    const focT = T.find(t => t.id === s.focusId) || T[0];
+    const frameBg = scr === 'focus' ? '#0B0B0E' : scr === 'detail' ? selT.c : bg;
+    const frameDark = scr === 'focus' ? true : scr === 'detail' ? selT.on === '#FFFFFF' : dark;
+
+    // today
+    const todayAll = T.filter(t => t.due === 'Today');
+    const todayOpen = todayAll.filter(t => !t.done).sort(sortP);
+    const todayDone = todayAll.filter(t => t.done);
+    const urgent = todayOpen.filter(t => t.pri === 0).length;
+    const now = T.filter(t => t.status === 'doing').sort(sortP)[0];
+    const segs = [...todayDone, ...todayOpen].map(t => ({ bg: t.done ? t.c : 'var(--surf2)' }));
+
+    // board
+    const colItems = T.filter(t => t.status === s.col).sort(sortP);
+    const colTabs = this.STATUS.map(c => {
+      const a = s.col === c.k;
+      return { name: c.label, n: T.filter(t => t.status === c.k).length, bg: a ? 'var(--ink)' : 'var(--surf)', fg: a ? 'var(--bg)' : 'var(--ink)', onClick: () => this.setState({ col: c.k }) };
+    });
+
+    // search
+    const q = s.q.trim().toLowerCase();
+    const results = T.filter(t =>
+      (!q || (t.title + ' ' + t.key + ' ' + (t.pr || '') + ' ' + t.type).toLowerCase().includes(q)) &&
+      (!s.fPri.length || s.fPri.includes(t.pri)) && (!s.fType || t.type === s.fType) &&
+      (s.fStatus === 'all' || t.status === s.fStatus)).sort((a, b) => (a.done - b.done) || sortP(a, b));
+    const priBtn = (i, active, onClick) => ({ label: this.PRI[i].label, c: this.PRI[i].c, bg: active ? this.PRI[i].c : 'transparent', fg: active ? this.PRI[i].on : 'var(--ink)', onClick });
+    const chip = (label, active, onClick) => ({ label, bg: active ? 'var(--ink)' : 'var(--surf)', fg: active ? 'var(--bg)' : 'var(--ink)', onClick });
+
+    // review
+    const done = T.filter(t => t.done);
+    const wk = [2, 3, 1, 4, 2, 3, done.filter(t => t.due === 'Today').length];
+    const max = Math.max(...wk, 1);
+    const week = ['M', 'T', 'W', 'T', 'F', 'S', 'S'].map((l, i) => ({ l, h: i === 6 ? '6%' : Math.max(8, wk[i === 5 ? 6 : i] / max * 100) + '%', bg: i === 5 ? sig : 'rgba(127,127,140,.35)' }));
+
+    // sheet
+    const pv = this.parse(s.draft);
+    const mm = String(Math.floor(s.secs / 60)).padStart(2, '0') + ':' + String(s.secs % 60).padStart(2, '0');
+    const nextSub = (focT.subs.find(x => !x.d) || {}).t || '';
+    const ob = s.obStep;
+    const navS = k => ({ bg: scr === k ? 'var(--ink)' : 'transparent', fg: scr === k ? 'var(--bg)' : 'var(--mute)' });
+    const jumpList = [['Onboarding', () => this.setState({ screen: 'onboard', obStep: 0, sheet: false })], ['Today', () => this.go('today')], ['Board', () => this.go('board')], ['Task detail', () => this.open(14)], ['Quick add', () => this.openSheet()], ['Search', () => this.go('search')], ['Weekly review', () => this.go('review')], ['Focus', () => this.focus(14)], [dark ? '☀ Light' : '☾ Dark', () => this.setState({ dark: !dark })]];
+    const curJump = s.sheet ? 'Quick add' : { onboard: 'Onboarding', today: 'Today', board: 'Board', detail: 'Task detail', search: 'Search', review: 'Weekly review', focus: 'Focus' }[scr];
+
+    const mob = window.innerWidth < 600;
+    const frameStyle = mob
+      ? { width: '100%', height: '100dvh', position: 'relative', overflow: 'hidden', background: frameBg, paddingTop: 'env(safe-area-inset-top)', boxSizing: 'border-box', display: 'flex', flexDirection: 'column' }
+      : { width: 412, height: 892, borderRadius: 18, overflow: 'hidden', background: frameBg, border: '8px solid #1b1b1f', boxShadow: '0 30px 80px rgba(0,0,0,.25)', boxSizing: 'border-box', position: 'relative', display: 'flex', flexDirection: 'column' };
+    themeVars.flex = 1; themeVars.minHeight = 0;
+    return {
+      frameStyle, jumpDisp: mob ? 'none' : 'flex', rootMinH: mob ? '100dvh' : '100vh', rootPad: mob ? '0' : '28px 16px 40px',
+      themeVars, frameBg, frameDark, dark, light: !dark,
+      jumps: jumpList.map(([label, onClick]) => ({ label, onClick, bg: label === curJump ? '#0F0F12' : 'rgba(15,15,18,.07)', fg: label === curJump ? '#fff' : '#0F0F12' })),
+      isOnboard: scr === 'onboard', isToday: scr === 'today', isBoard: scr === 'board', isSearch: scr === 'search', isReview: scr === 'review', isDetail: scr === 'detail', isFocus: scr === 'focus',
+      showNav: ['today', 'board', 'search', 'review'].includes(scr),
+      toggleDark: () => this.setState({ dark: !dark }),
+      goToday: () => this.go('today'), goBoard: () => this.go('board'), goReview: () => this.go('review'), goSearch: () => this.go('search'),
+      back: () => this.setState({ screen: s.prev || 'today', running: false }),
+      nav: { today: navS('today'), board: navS('board'), review: navS('review'), search: navS('search') },
+      // onboarding
+      ob0: ob === 0, ob1: ob === 1, ob2: ob === 2, obCount: '0' + (ob + 1) + ' / 03',
+      obDots: [0, 1, 2].map(i => ({ w: i === ob ? '22px' : '6px', bg: i === ob ? 'var(--ink)' : 'var(--line)' })),
+      obCta: ob === 2 ? 'Start' : 'Next', obNext: () => ob === 2 ? this.go('today') : this.setState({ obStep: ob + 1 }),
+      finishOb: () => this.go('today'), priLegend: this.PRI,
+      toggleGh: () => this.setState({ gh: !s.gh }), ghSub: s.gh ? 'bgdmart/storefront' : 'Not connected',
+      ghBtn: s.gh ? 'Connected' : 'Connect', ghBtnBg: s.gh ? '#12C79A' : 'var(--ink)', ghBtnFg: s.gh ? '#002A1F' : 'var(--bg)',
+      // today
+      todayHeadline: todayOpen.length ? todayOpen.length + ' to ship' : 'All clear',
+      todaySub: todayDone.length + ' of ' + todayAll.length + ' done today' + (urgent ? ' · ' + urgent + ' urgent' : ''),
+      todaySegs: segs, todayLeftN: String(todayOpen.length), todayList: [...todayOpen, ...todayDone],
+      hasNow: !!now, now: now || T[0],
+      upcoming: T.filter(t => !t.done && t.due !== 'Today').sort(sortP).slice(0, 4),
+      // board
+      colTabs, colItems, colEmpty: colItems.length === 0, openCount: T.filter(t => !t.done).length + ' open',
+      // search
+      q: s.q, hasQ: !!s.q, onQ: e => this.setState({ q: e.target.value }), clearQ: () => this.setState({ q: '' }),
+      priFilters: [0, 1, 2, 3].map(i => priBtn(i, s.fPri.includes(i), () => this.setState(st => ({ fPri: st.fPri.includes(i) ? st.fPri.filter(x => x !== i) : [...st.fPri, i] })))),
+      typeFilters: [chip('All types', !s.fType, () => this.setState({ fType: null })), ...this.TYPES.map(ty => chip(ty, s.fType === ty, () => this.setState({ fType: s.fType === ty ? null : ty })))],
+      statusFilters: [{ k: 'all', label: 'All' }, ...this.STATUS].map(o => ({ label: o.label, bg: s.fStatus === o.k ? 'var(--ink)' : 'transparent', fg: s.fStatus === o.k ? 'var(--bg)' : 'var(--ink)', onClick: () => this.setState({ fStatus: o.k }) })),
+      results, resultsLabel: results.length + ' RESULT' + (results.length === 1 ? '' : 'S'),
+      // review
+      doneCount: String(done.length + 6), week, focusTime: '6h 40m', bugsClosed: String(done.filter(t => t.type === 'Bug').length + 2),
+      priMix: this.PRI.map((p, i) => ({ label: p.label, c: p.c, n: done.filter(t => t.pri === i).length })).filter(p => p.n > 0),
+      doneList: done, carryN: String(T.filter(t => !t.done).length),
+      // detail
+      d: selT,
+      statusOpts: this.STATUS.map(o => ({ label: o.label, bg: selT.status === o.k ? 'var(--ink)' : 'transparent', fg: selT.status === o.k ? 'var(--bg)' : 'var(--ink)', onClick: () => this.upd(selT.id, x => ({ ...x, status: o.k })) })),
+      priOpts: [0, 1, 2, 3].map(i => priBtn(i, selT.pri === i, () => this.upd(selT.id, x => ({ ...x, pri: i })))),
+      subRows: selT.subs.map((x, i) => ({ ...x, bg: x.d ? selT.c : 'transparent', deco: x.d ? 'line-through' : 'none', op: x.d ? 0.5 : 1, toggle: () => this.upd(selT.id, t => ({ ...t, subs: t.subs.map((y, j) => j === i ? { ...y, d: !y.d } : y) })) })),
+      newSub: s.newSub, onNewSub: e => this.setState({ newSub: e.target.value }),
+      onSubKey: e => { if (e.key === 'Enter' && s.newSub.trim()) { const v = s.newSub.trim(); this.upd(selT.id, t => ({ ...t, subs: [...t.subs, { t: v, d: false }] })); this.setState({ newSub: '' }); } },
+      linkPr: () => this.upd(selT.id, t => ({ ...t, pr: '#' + (219 + t.id % 7), branch: (t.type === 'Bug' ? 'fix/' : 'feat/') + t.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').slice(0, 24).replace(/-$/, '') })),
+      // focus
+      f: { ...focT, nextSub, complete: () => { this.upd(focT.id, x => ({ ...x, status: 'done' })); this.setState({ screen: s.prev || 'today', running: false }); this.flash('Shipped · ' + focT.key); } },
+      clock: mm, ringOff: String(753.98 * (1 - s.secs / 1500)), focusState: s.running ? 'DEEP WORK' : 'PAUSED',
+      runLabel: s.running ? 'Pause' : 'Resume', toggleRun: () => this.setState({ running: !s.running }),
+      // sheet
+      sheetPE: s.sheet ? 'auto' : 'none', sheetOp: s.sheet ? 1 : 0, sheetTf: s.sheet ? 'translateY(0)' : 'translateY(105%)',
+      openSheet: () => this.openSheet(), closeSheet: () => this.setState({ sheet: false }),
+      inputRef: this.inputRef, draft: s.draft, onDraft: e => this.setState({ draft: e.target.value }),
+      onDraftKey: e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); this.addTask(); } },
+      pv: { c: this.PRI[pv.pri].c },
+      sheetPri: [0, 1, 2, 3].map(i => priBtn(i, pv.pri === i, () => this.setState({ dPri: i, draft: s.draft.replace(/!p?[0-3]\b/i, '').trim() }))),
+      sheetTypes: this.TYPES.map(ty => ({ label: ty, bg: pv.type === ty ? 'var(--ink)' : 'var(--surf2)', fg: pv.type === ty ? 'var(--bg)' : 'var(--ink)', onClick: () => this.setState({ dType: ty, draft: s.draft.replace(/#\w+/, '').trim() }) })),
+      sheetDue: ['Today', 'Tomorrow', 'Mon'].map(l => ({ label: l, bg: s.dDue === l ? 'var(--ink)' : 'transparent', fg: s.dDue === l ? 'var(--bg)' : 'var(--ink)', onClick: () => this.setState({ dDue: l }) })),
+      addTask: () => this.addTask(), addOp: pv.title ? 1 : 0.35,
+      hasToast: !!s.toast, toast: s.toast,
+    };
+  }
+  openSheet() {
+    this.setState(s => ({ sheet: true, screen: ['today', 'board', 'search', 'review'].includes(s.screen) ? s.screen : 'today' }));
+    setTimeout(() => this.inputRef.current && this.inputRef.current.focus(), 320);
+  }
+}
+</script>
+</body>
+</html>
