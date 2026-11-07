@@ -636,7 +636,7 @@ class Component extends DCLogic {
       q: '', fPri: [], fType: null, fStatus: 'all', col: 'In Progress', obStep: 0,
       secs: 1500, running: false, newSub: '', toast: null,
       syncSt: mode === 'sheet' ? 'syncing' : mode === 'demo' ? 'demo' : 'idle', pend: (this.ls('bgdx2-queue') || []).length, lastSync: (this.ls('bgdx2-cache') || {}).ts || 0, syncErr: '',
-      lUrl: '', lKey: '', lMe: '', lErr: '', lBusy: false, lStep: 1, lShowKey: false, lAdv: false, lPend: null,
+      lUrl: '', lKey: '', lMe: '', lErr: '', lBusy: false, lStep: 1, lShowKey: false, lAdv: false, lPend: null, dOwners: null,
     };
   })();
   seed() {
@@ -669,7 +669,7 @@ class Component extends DCLogic {
   }
   me() { return (this.cfg && this.cfg.me) || (this.state && this.state.lMe) || 'Nafis'; }
   owners(tasks) {
-    const set = []; tasks.forEach(t => { if (t.owner && !set.includes(t.owner)) set.push(t.owner); });
+    const set = this.state && this.state.dOwners ? this.state.dOwners.slice() : []; tasks.forEach(t => { if (t.owner && !set.includes(t.owner)) set.push(t.owner); });
     const me = this.me(); set.sort((a, b) => (b === me) - (a === me) || a.localeCompare(b)); return set;
   }
   types(tasks) { const o = [...this.DOMAINS]; tasks.forEach(t => { if (t.domain && !o.includes(t.domain)) o.push(t.domain); }); return o; }
@@ -751,7 +751,7 @@ class Component extends DCLogic {
         const local = new Map(s.tasks.map(t => [t.id, t]));
         const out = j.tasks.map(t => pend.has(t.id) ? (local.get(t.id) || t) : t);
         s.tasks.forEach(t => { if (pend.has(t.id) && !ids.has(t.id)) out.push(t); });
-        return { tasks: out, syncSt: 'synced', lastSync: Date.now(), syncErr: '', pend: this.queue.length };
+        return { tasks: out, dOwners: j.owners || s.dOwners, syncSt: 'synced', lastSync: Date.now(), syncErr: '', pend: this.queue.length };
       });
       ok = true;
     } catch (e) { this.setState({ syncSt: navigator.onLine ? 'error' : 'offline', syncErr: String(e.message || e) }); }
@@ -767,16 +767,18 @@ class Component extends DCLogic {
       const res = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify({ key, action: 'sync', ops: [] }) });
       const j = await res.json();
       if (!j.ok) throw new Error(j.error === 'auth' ? 'That key is not right. Check it with your admin.' : (j.error || 'Server error'));
-      this.setState({ lBusy: false, lPend: { url, key, tasks: j.tasks }, lStep: 2, lErr: '', lMe: '' });
+      const pend = { url, key, tasks: j.tasks, owners: j.owners || [] };
+      if (j.who && j.who !== 'Admin') { this.finishLogin(j.who, pend); return; }
+      this.setState({ lBusy: false, lPend: pend, lStep: 2, lErr: '', lMe: '' });
     } catch (e) { this.setState({ lBusy: false, lErr: String(e.message || e).replace('Failed to fetch', 'Could not connect. Check your internet and try again.') }); }
   }
-  finishLogin(name) {
-    const me = (name || '').trim(), p = this.state.lPend;
+  finishLogin(name, pend) {
+    const me = (name || '').trim(), p = pend || this.state.lPend;
     if (!me) { this.setState({ lErr: 'Pick or type your name.' }); return; }
     if (!p) return;
     this.cfg = { url: p.url, key: p.key, me }; this.queue = [];
     this.sv('bgdx2-cfg', this.cfg); this.sv('bgdx2-queue', []);
-    this.setState({ mode: 'sheet', tasks: p.tasks, screen: 'today', lBusy: false, lKey: '', lPend: null, lStep: 1, lErr: '', syncSt: 'synced', lastSync: Date.now(), pend: 0, ownerF: null });
+    this.setState({ mode: 'sheet', tasks: p.tasks, dOwners: p.owners || [], screen: 'today', lBusy: false, lKey: '', lPend: null, lStep: 1, lErr: '', syncSt: 'synced', lastSync: Date.now(), pend: 0, ownerF: null });
   }
   signOut(msg) {
     this.cfg = null; this.queue = []; this.sv('bgdx2-cfg', null); this.sv('bgdx2-queue', []); this.sv('bgdx2-cache', null); this.sv('bgdx2-demo', false);

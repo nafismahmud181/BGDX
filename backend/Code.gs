@@ -18,17 +18,34 @@ function doPost(e) {
     var body = JSON.parse(e.postData.contents);
     var who = authUser(body.key);
     if (!who) return out({ ok: false, error: 'auth' });
+    var owners = dataOwners();
+    if (who !== 'Admin') {
+      var canon = owners.filter(function (n) { return n.toLowerCase() === who.toLowerCase(); })[0];
+      if (!canon) return out({ ok: false, error: 'Your key name "' + who + '" is not in the Data owners list. Ask your admin.' });
+      who = canon;
+    }
     var lock = LockService.getScriptLock();
     lock.waitLock(20000);
     try {
       var sh = ss().getSheetByName(SHEET_NAME);
       if (!sh) return out({ ok: false, error: 'Sheet tab "' + SHEET_NAME + '" not found' });
       var cols = headerMap(sh);
-      (body.ops || []).forEach(function (op) { if (op.op === 'upsert' && op.task) upsert(sh, cols, op.task, who); });
+      (body.ops || []).forEach(function (op) { if (op.op === 'upsert' && op.task) upsert(sh, cols, op.task, who, owners); });
       SpreadsheetApp.flush();
-      return out({ ok: true, tasks: readAll(sh, cols) });
+      var all = readAll(sh, cols);
+      if (who !== 'Admin') all = all.filter(function (t) { return t.owner === who; });
+      return out({ ok: true, who: who, owners: owners, tasks: all });
     } finally { lock.releaseLock(); }
   } catch (err) { return out({ ok: false, error: String(err) }); }
+}
+
+// Owner list = the same list your Ownership dropdown uses (Data!B2:B1000).
+function dataOwners() {
+  var sh = ss().getSheetByName('Data');
+  if (!sh) return [];
+  var v = sh.getRange('B2:B1000').getValues(), o = [];
+  v.forEach(function (r) { var n = String(r[0]).trim(); if (n && o.indexOf(n) < 0) o.push(n); });
+  return o;
 }
 
 function out(o) { return ContentService.createTextOutput(JSON.stringify(o)).setMimeType(ContentService.MimeType.JSON); }
@@ -88,7 +105,8 @@ function authUser(k) {
   return null;
 }
 
-function upsert(sh, cols, t, who) {
+function upsert(sh, cols, t, who, owners) {
+  if (who !== 'Admin' && owners.indexOf(t.owner) < 0) t.owner = who;
   var m = cols.map, last = sh.getLastRow(), row = -1, existing = null;
   if (last >= 2) {
     var ids = sh.getRange(2, m['aid'] + 1, last - 1, 1).getValues();
@@ -96,6 +114,7 @@ function upsert(sh, cols, t, who) {
   }
   if (row > 0) {
     existing = sh.getRange(row, 1, 1, cols.width).getValues()[0];
+    if (who !== 'Admin' && String(existing[m['ownership']]).trim() !== who) return; // not your task
     if ((Number(existing[m['updated']]) || 0) > (t.upd || 0)) return; // server copy is newer
   } else { row = Math.max(last, 1) + 1; existing = new Array(cols.width).fill(''); }
   function set(n, v) { existing[m[n.toLowerCase()]] = v; }
