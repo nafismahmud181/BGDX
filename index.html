@@ -1103,7 +1103,7 @@ class Component extends DCLogic {
       isInbox: scr === 'inbox', goInbox: () => this.goInbox(), hasUnread: unread > 0, inboxBadge: unread > 9 ? '9+' : String(unread),
       inboxSub: (() => { const n = scr === 'inbox' ? s.inbox.filter(x => x.ts > s.inboxMark).length : unread; return s.inbox.length ? (n ? n + ' new' : 'All caught up') : ''; })(), inboxEmpty: s.inbox.length === 0,
       inboxItems: s.inbox.map(n => {
-        const k = { assign: ['#6B4BFF', 'M15 19v-1a4 4 0 00-4-4H7a4 4 0 00-4 4v1M9 10a3 3 0 100-6 3 3 0 000 6zM19 8v6M22 11h-6'], change: ['#0B4FA8', 'M4 20h4L19 9l-4-4L4 16v4zM13.5 6.5l4 4'], blocked: ['#FF2E63', 'M12 3l9.5 17h-19L12 3zM12 10v4M12 17.5v.01'], daily: ['#FF8A00', 'M12 7v5l3 2M12 3a9 9 0 100 18 9 9 0 000-18z'] }[n.kind] || ['#8E8D99', 'M6 16V11a6 6 0 1112 0v5l1.5 2h-15zM10 20.5a2 2 0 004 0'];
+        const k = { assign: ['#6B4BFF', 'M15 19v-1a4 4 0 00-4-4H7a4 4 0 00-4 4v1M9 10a3 3 0 100-6 3 3 0 000 6zM19 8v6M22 11h-6'], change: ['#0B4FA8', 'M4 20h4L19 9l-4-4L4 16v4zM13.5 6.5l4 4'], blocked: ['#FF2E63', 'M12 3l9.5 17h-19L12 3zM12 10v4M12 17.5v.01'], closed: ['#137A4B', 'M5 12.5l4.5 4.5L19 7.5'], daily: ['#FF8A00', 'M12 7v5l3 2M12 3a9 9 0 100 18 9 9 0 000-18z'] }[n.kind] || ['#8E8D99', 'M6 16V11a6 6 0 1112 0v5l1.5 2h-15zM10 20.5a2 2 0 004 0'];
         const isNew = n.ts > s.inboxMark;
         return { title: n.title, body: n.body, when: this.agoShort(n.ts), c: k[0], d: k[1], bg: isNew ? 'var(--surf)' : 'transparent', bd: isNew ? 'transparent' : 'var(--line)', dot: isNew ? 'block' : 'none', open: () => this.openNote(n) };
       }),

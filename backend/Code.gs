@@ -222,7 +222,10 @@ function collectEvents(events, before, t, m, actor) {
     if (ch.length) events.push({ kind: 'change', to: t.owner, title: actor + ' updated your task', body: label + '\n' + ch.join(' · '), url: '#/detail/' + t.id, tag: t.id });
   }
   if (t.status === 'Blocked' && oldStatus !== 'Blocked') {
-    events.push({ kind: 'blocked', toAdmins: true, title: 'Task blocked', body: label + '\nOwner: ' + (t.owner || '—') + (actor ? ' · by ' + actor : ''), url: '#/detail/' + t.id, tag: t.id + '-blocked' });
+    events.push({ kind: 'blocked', toAdmins: true, except: mine ? t.owner : '', title: 'Task blocked', body: label + '\nOwner: ' + (t.owner || '—') + (actor ? ' · by ' + actor : ''), url: '#/detail/' + t.id, tag: t.id + '-blocked' });
+  }
+  if (t.status === 'Closed' && before && oldStatus !== 'Closed') {
+    events.push({ kind: 'closed', toAdmins: true, except: mine ? t.owner : '', title: 'Task closed', body: label + '\nOwner: ' + (t.owner || '—') + (actor ? ' · by ' + actor : ''), url: '#/detail/' + t.id, tag: t.id + '-closed' });
   }
 }
 
@@ -232,7 +235,7 @@ function notifyEvents(events, actor) {
   events.forEach(function (e) {
     devices.forEach(function (d) {
       var n = d.name.toLowerCase();
-      var hit = e.toAdmins ? (d.role === 'admin' && n !== me) : (n === String(e.to).toLowerCase());
+      var hit = e.toAdmins ? (d.role === 'admin' && n !== me && n !== String(e.except || '').toLowerCase()) : (n === String(e.to).toLowerCase());
       if (hit) msgs.push({ device: d, title: e.title, body: e.body, url: e.url, tag: e.tag });
     });
   });
@@ -262,7 +265,7 @@ function dailyReminder() {
 
 // ── In-app inbox: every notification is also logged to a hidden "Inbox" tab ──
 var INBOX_SHEET = 'Inbox';
-var INBOX_HEAD = ['Time', 'To', 'Kind', 'Title', 'Body', 'Link', 'By'];
+var INBOX_HEAD = ['Time', 'To', 'Kind', 'Title', 'Body', 'Link', 'By', 'Except'];
 var INBOX_KEEP = 2000; // rows; older ones are trimmed
 
 function inboxSheet() {
@@ -271,6 +274,8 @@ function inboxSheet() {
     sh = book.insertSheet(INBOX_SHEET);
     sh.getRange(1, 1, 1, INBOX_HEAD.length).setValues([INBOX_HEAD]);
     sh.hideSheet();
+  } else if (sh.getRange(1, INBOX_HEAD.length).getValue() === '') {
+    sh.getRange(1, 1, 1, INBOX_HEAD.length).setValues([INBOX_HEAD]); // older tab: add new header(s)
   }
   return sh;
 }
@@ -278,7 +283,7 @@ function inboxSheet() {
 function logInbox(events, actor) {
   if (!events.length) return;
   var now = Date.now();
-  var rows = events.map(function (e) { return [now, e.toAdmins ? '@admins' : e.to, e.kind || '', e.title, e.body, e.url || '', actor || '']; });
+  var rows = events.map(function (e) { return [now, e.toAdmins ? '@admins' : e.to, e.kind || '', e.title, e.body, e.url || '', actor || '', e.except || '']; });
   var lock = LockService.getScriptLock();
   lock.waitLock(20000);
   try {
@@ -297,7 +302,7 @@ function readInbox(name, admin) {
   var rows = sh.getRange(from, 1, last - from + 1, INBOX_HEAD.length).getValues();
   for (var i = rows.length - 1; i >= 0 && outList.length < 50; i--) {
     var r = rows[i], to = String(r[1]).toLowerCase();
-    var mine = to === me || (admin && to === '@admins' && String(r[6]).toLowerCase() !== me);
+    var mine = to === me || (admin && to === '@admins' && String(r[6]).toLowerCase() !== me && String(r[7]).toLowerCase() !== me);
     if (mine) outList.push({ ts: Number(r[0]) || 0, kind: String(r[2]), title: String(r[3]), body: String(r[4]), url: String(r[5]) });
   }
   return outList;
