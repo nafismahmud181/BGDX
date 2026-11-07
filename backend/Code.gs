@@ -3,6 +3,10 @@
  * Setup: see SETUP.md. Secret key lives in Project Settings > Script properties > BGDX_KEY.
  */
 var SHEET_NAME = 'Actions';
+// Leave empty if you opened this script from the sheet (Extensions > Apps Script).
+// If this is a standalone project, paste your sheet ID here (the text between /d/ and /edit in its URL).
+var SPREADSHEET_ID = '1sbtGjaURWWbiko5G33Zk8noOzolXl80su83kKiQykPQ';
+function ss() { return SPREADSHEET_ID ? SpreadsheetApp.openById(SPREADSHEET_ID) : SpreadsheetApp.getActiveSpreadsheet(); }
 var PRIORITIES = ['Highest', 'Medium', 'Low', 'Lowest'];
 var STATUSES = ['Backlog', 'In Progress', 'Blocked', 'Parked', 'Closed'];
 var REQUIRED = ['AID', 'Title', 'Domain', 'Ownership', 'Status', 'Priority', 'Cost Required?', 'Tentative Cost', 'Due Date', 'Actual Start', 'Actual End', 'Notes', 'Checklist', 'PR', 'Branch', 'Updated'];
@@ -17,7 +21,7 @@ function doPost(e) {
     var lock = LockService.getScriptLock();
     lock.waitLock(20000);
     try {
-      var sh = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(SHEET_NAME);
+      var sh = ss().getSheetByName(SHEET_NAME);
       if (!sh) return out({ ok: false, error: 'Sheet tab "' + SHEET_NAME + '" not found' });
       var cols = headerMap(sh);
       (body.ops || []).forEach(function (op) { if (op.op === 'upsert' && op.task) upsert(sh, cols, op.task); });
@@ -43,9 +47,9 @@ function headerMap(sh) {
 }
 
 function iso(v) {
-  if (v instanceof Date && !isNaN(v)) return Utilities.formatDate(v, SpreadsheetApp.getActiveSpreadsheet().getSpreadsheetTimeZone(), 'yyyy-MM-dd');
+  if (v instanceof Date && !isNaN(v)) return Utilities.formatDate(v, ss().getSpreadsheetTimeZone(), 'yyyy-MM-dd');
   var d = new Date(v);
-  return v && !isNaN(d) ? Utilities.formatDate(d, SpreadsheetApp.getActiveSpreadsheet().getSpreadsheetTimeZone(), 'yyyy-MM-dd') : '';
+  return v && !isNaN(d) ? Utilities.formatDate(d, ss().getSpreadsheetTimeZone(), 'yyyy-MM-dd') : '';
 }
 function toDate(s) { if (!s) return ''; var p = String(s).split('-'); return new Date(+p[0], +p[1] - 1, +p[2]); }
 
