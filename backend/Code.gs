@@ -14,7 +14,9 @@ var REQUIRED = ['AID', 'Title', 'Domain', 'Ownership', 'Status', 'Priority', 'Co
 // Helper columns BGDX adds live far to the right (BB..BF) so they stay out of your way.
 var PLACED = { 'Checklist': 54, 'PR': 55, 'Branch': 56, 'Updated': 57, 'Updated By': 58 };
 
-function doGet() { return out({ ok: true, msg: 'BGDX API is running' }); }
+// Bump on every change; open the /exec URL in a browser to see which version is live.
+var API_VERSION = '1.3 (push + inbox + closed alerts)';
+function doGet() { return out({ ok: true, msg: 'BGDX API is running', version: API_VERSION }); }
 
 function doPost(e) {
   try {

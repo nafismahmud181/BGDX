@@ -10,3 +10,11 @@ android/local.properties
 *firebase-adminsdk*.json
 *service-account*.json
 
+
+# rebuild secrets
+app/.secrets.env
+app/.env.local
+app/node_modules
+app/dist
+app/supabase/.temp
+.seed-test.json

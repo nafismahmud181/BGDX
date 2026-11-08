@@ -1,0 +1,43 @@
+// Admin flow: promote the seeded test user to admin, create a person in the People screen, verify they can sign in.
+import fs from 'node:fs';
+import puppeteer from 'puppeteer-core';
+const base = process.argv[2] || 'http://127.0.0.1:8766/', shotDir = process.argv[3];
+const env = Object.fromEntries(fs.readFileSync(new URL('../.secrets.env', import.meta.url), 'utf8').split('\n').filter(Boolean).map(l => [l.slice(0, l.indexOf('=')), l.slice(l.indexOf('=') + 1)]));
+const st = JSON.parse(fs.readFileSync(new URL('../.seed-test.json', import.meta.url), 'utf8'));
+const svc = (p, o = {}) => fetch(env.SUPABASE_URL + p, { ...o, headers: { apikey: env.SUPABASE_SERVICE_ROLE_KEY, Authorization: 'Bearer ' + env.SUPABASE_SERVICE_ROLE_KEY, 'Content-Type': 'application/json', Prefer: 'return=representation' } }).then(r => r.json().catch(() => null));
+let pass = 0, fail = 0; const ok = (c, n, x = '') => { c ? pass++ : fail++; console.log(c ? '  ✓' : '  ✗', n, c ? '' : x); };
+const wait = ms => new Promise(r => setTimeout(r, ms));
+
+await svc(`/rest/v1/members?workspace_id=eq.${st.ws}&username=eq.vtest`, { method: 'PATCH', body: JSON.stringify({ role: 'admin' }) });
+const browser = await puppeteer.launch({ executablePath: 'C:/Program Files/Google/Chrome/Application/chrome.exe', headless: true });
+const page = await browser.newPage(); const errs = []; page.on('pageerror', e => errs.push(e.message));
+page.on('dialog', d => d.accept());
+await page.setViewport({ width: 390, height: 844, isMobile: true, hasTouch: true });
+await page.goto(base); await page.evaluate(() => { localStorage.clear(); localStorage.setItem('bgdx3-onb', 'true'); }); await page.goto(base, { waitUntil: 'networkidle0' });
+await page.type('input[autocomplete="username"]', st.user); await page.type('input[autocomplete="current-password"]', st.pw);
+await page.evaluate(() => [...document.querySelectorAll('button')].find(b => b.textContent.trim() === 'Sign in').click());
+await page.waitForFunction(() => document.body.innerText.includes('BGDX'), { timeout: 15000 }); await wait(1500);
+const click = t => page.evaluate(t => { const b = [...document.querySelectorAll('button')].find(x => x.textContent.trim() === t); if (b) b.click(); return !!b; }, t);
+await page.goto(base + '#/account', { waitUntil: 'networkidle0' }); await wait(600);
+ok(await click('Manage people'), 'admin sees "Manage people" on Account');
+await wait(1500);
+ok(await page.evaluate(() => document.body.innerText.includes('ADD A PERSON')), 'People screen opens');
+const uname = 'pe2e' + Date.now().toString(36);
+await page.type('input[placeholder^="Name on tasks"]', 'Rafi');
+await page.type('input[placeholder^="Username"]', uname);
+await click('Generate'); await wait(200);
+const pw = await page.$eval('input[placeholder="Password"]', el => el.value);
+ok(/[A-Z]/.test(pw) && /[a-z]/.test(pw) && /\d/.test(pw) && pw.length >= 14, 'Generate makes a strong password');
+await click('Create account');
+const created = await page.waitForFunction(() => document.body.innerText.includes('Account created'), { timeout: 15000 }).then(() => true).catch(() => false);
+ok(created, 'account created message with the login details', await page.evaluate(() => document.body.innerText.slice(0, 600)));
+await wait(1500);
+if (shotDir) await page.screenshot({ path: shotDir + '/6-people.png' });
+ok(await page.evaluate(n => document.body.innerText.includes('@' + n), uname), 'new person appears in the list');
+const signIn = await fetch(`${env.SUPABASE_URL}/auth/v1/token?grant_type=password`, { method: 'POST', headers: { apikey: env.SUPABASE_ANON_KEY, 'Content-Type': 'application/json' }, body: JSON.stringify({ email: `${uname}@users.bgdx.app`, password: pw }) }).then(r => r.json());
+ok(!!signIn.access_token, 'the new person can sign in with that username and password');
+const m = await svc(`/rest/v1/members?select=user_id&username=eq.${uname}`);
+if (m && m[0]) { st.users.push(m[0].user_id); fs.writeFileSync(new URL('../.seed-test.json', import.meta.url), JSON.stringify(st)); }
+ok(errs.length === 0, 'no page errors', errs.join(' | '));
+await browser.close();
+console.log(`\n${pass} passed, ${fail} failed`); process.exit(fail ? 1 : 0);
